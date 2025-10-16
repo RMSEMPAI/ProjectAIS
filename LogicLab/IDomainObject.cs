@@ -8,5 +8,6 @@ namespace LogicLab
 {
     public interface IDomainObject
     {
+        int Id { get; set; }
     }
 }

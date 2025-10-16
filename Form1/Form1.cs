@@ -19,7 +19,7 @@ namespace Laba1
     {
         private static List<string> all_positions = Enum.GetNames(typeof(Position)).ToList();
         private static List<string> all_departments = Enum.GetNames(typeof(Department)).ToList();
-        private Timer timer;
+        private System.Windows.Forms.Timer timer;
         private DateTime LastSynchronizationDate;
         private Logic logic;
         public Form1()
@@ -34,7 +34,7 @@ namespace Laba1
             checkBox1.Checked = true;
 
             LastSynchronizationDate = DateTime.Now;
-            timer = new Timer();
+            timer = new System.Windows.Forms.Timer();
             timer.Interval = 1000;
             timer.Tick += (s, e) => UpdateData();
             timer.Start();
