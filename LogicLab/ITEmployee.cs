@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LogicLab;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace LogicLib
 {
-    public class ITEmployee : IDomain
+    public class ITEmployee : IDomainObject
     {
         public int Id { get; set; }
         public string FullName { get; set; }

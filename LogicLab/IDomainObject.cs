@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace LogicLab
 {
-    internal interface IDomainObject
+    public interface IDomainObject
     {
     }
 }
