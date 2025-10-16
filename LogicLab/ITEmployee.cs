@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace LogicLib
 {
-    public class ITEmployee : IDomainObject
+    public class ITEmployee : IDomain
     {
         public int Id { get; set; }
         public string FullName { get; set; }
