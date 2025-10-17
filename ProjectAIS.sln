@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36518.9 d17.14
+VisualStudioVersion = 17.14.36518.9
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp1", "ProjectAIS\ConsoleApp1.csproj", "{D36E28E3-C250-4682-B850-194659230759}"
 EndProject
@@ -10,6 +10,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogicLab", "LogicLab\LogicLab.csproj", "{304042A3-688F-43EC-98BB-5F6F3E0800BA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccessLayer", "DataAccessLayer\DataAccessLayer.csproj", "{8F3C8FC5-93A4-4E09-8851-15422B9A065F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DBCreate", "DBCreate\DBCreate.csproj", "{62F68180-863C-40ED-A1EB-EDAE9B18179D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{8F3C8FC5-93A4-4E09-8851-15422B9A065F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8F3C8FC5-93A4-4E09-8851-15422B9A065F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8F3C8FC5-93A4-4E09-8851-15422B9A065F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{62F68180-863C-40ED-A1EB-EDAE9B18179D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62F68180-863C-40ED-A1EB-EDAE9B18179D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62F68180-863C-40ED-A1EB-EDAE9B18179D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62F68180-863C-40ED-A1EB-EDAE9B18179D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

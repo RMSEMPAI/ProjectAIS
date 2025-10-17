@@ -1,7 +1,7 @@
 ﻿using DataAccessLayer;
 using LogicLab;
-using LogicLib;
 using Microsoft.EntityFrameworkCore;
+using LogicLib;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,11 +11,11 @@ using static Dapper.SqlMapper;
 
 namespace LogicLibrary
 {
-    public class EntityRepository<T> : IRepository<T> where T : class, IDomainObject, IComparable<T>, new()
+    public class EntityRepository<T> : IRepository<T> where T : class, IDomainObject, new()
     {
-        private ITEmployee _context;
+        private ITEmployeeContext _context;
 
-        public EntityRepository(ITEmployee context)
+        public EntityRepository(ITEmployeeContext context)
         {
             _context = context;
         }

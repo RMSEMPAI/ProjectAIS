@@ -1,4 +1,5 @@
 ﻿using LogicLib;
+using Microsoft.VisualBasic.Logging;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -14,10 +15,10 @@ namespace Laba1
 {
     public partial class UpdateEmployee : Form
     {
-        private Action<string, Position, Department, decimal, int> action;
+        private Action<ITEmployee> action;
         private List<string> all_positions;
         private List<string> all_departments;
-        public UpdateEmployee(EventForm eventForm, Action<string, Position, Department, decimal, int> action, List<string> all_positions, List<string> all_departments)
+        public UpdateEmployee(EventForm eventForm, Action<ITEmployee> action, List<string> all_positions, List<string> all_departments)
         {
             InitializeComponent();
             this.action = action;
@@ -64,7 +65,7 @@ namespace Laba1
                 MessageBox.Show("Введите целое число для стажа");
                 return;
             }
-            action(fio, pos, depart, salary, exp);
+            action(new ITEmployee { FullName = fio, Position = pos, Department = depart, Salary = salary, ExperienceYears = exp });
             this.Close();
         }
     }

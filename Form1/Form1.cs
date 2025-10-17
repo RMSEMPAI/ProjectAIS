@@ -25,7 +25,7 @@ namespace Laba1
         public Form1()
         {
             InitializeComponent();
-            logic = new Logic();
+            logic = new Logic(Logic.SQLProvider.EF);
 
             comboBox1.DataSource = all_positions;
             comboBox2.DataSource = all_departments;
@@ -43,20 +43,16 @@ namespace Laba1
         }
         private void UpdateData()
         {
-            if (this.LastSynchronizationDate < logic.LastSynchronizationDate)
-            {
-                this.LastSynchronizationDate = logic.LastSynchronizationDate;
-                ShowData();
-            }
+            ShowData();
         }
         public void ShowData()
         {
             if (checkBox1.Checked)
                 dataGridView1.DataSource = logic.GetAllEmployees();
             else if (checkBox2.Checked)
-                dataGridView1.DataSource = logic.GetEmployeesByPosition((Position)comboBox1.SelectedIndex);
+                dataGridView1.DataSource = logic.GetEmployeeByPosition((Position)comboBox1.SelectedIndex);
             else if (checkBox3.Checked)
-                dataGridView1.DataSource = logic.GetEmployeesByDepartment((Department)comboBox2.SelectedIndex);
+                dataGridView1.DataSource = logic.GetEmployeeByDepartment((Department)comboBox2.SelectedIndex);
             else if (checkBox4.Checked)
                 dataGridView1.DataSource = logic.GetPromoteEmployees();
             else
@@ -129,15 +125,8 @@ namespace Laba1
                 MessageBox.Show("Выберите работника");
                 return;
             }
-            Action<string, Position, Department, decimal, int> update = (fio, pos, depart, salary, exp) => {
-                logic.UpdateEmployee((int)dataGridView1.SelectedRows[0].Cells[0].Value, new ITEmployee
-                {
-                    FullName = fio,
-                    Position = pos,
-                    Department = depart,
-                    Salary = salary,
-                    ExperienceYears = exp
-                });
+            Action<ITEmployee> update = (ITEmployee e) => {
+                logic.UpdateEmployee(e);
             };
             var form = new UpdateEmployee(EventForm.AddOrUpdate, update, all_positions, all_departments);
             form.SetEmployee(logic.GetEmployeeById((int)dataGridView1.SelectedRows[0].Cells[0].Value));
@@ -160,7 +149,7 @@ namespace Laba1
             {
                 DataGridViewRow row = (DataGridViewRow)i;
                 int id = (int)row.Cells[0].Value;
-                logic.RemoveEmployee(id);
+                logic.DeleteEmployee(id);
             }
             ShowData();
         }
@@ -172,15 +161,8 @@ namespace Laba1
                 MessageBox.Show("Выберите работника");
                 return;
             }
-            Action<string, Position, Department, decimal, int> update = (fio, pos, depart, salary, exp) => {
-                logic.UpdateEmployee((int)dataGridView1.SelectedRows[0].Cells[0].Value, new ITEmployee
-                {
-                    FullName = fio,
-                    Position = pos,
-                    Department = depart,
-                    Salary = salary,
-                    ExperienceYears = exp
-                });
+            Action<ITEmployee> update = (ITEmployee e) => {
+                logic.UpdateEmployee(e);
             };
             var form = new UpdateEmployee(EventForm.ShiftDepartment, update, all_positions, all_departments);
             form.SetEmployee(logic.GetEmployeeById((int)dataGridView1.SelectedRows[0].Cells[0].Value));
@@ -203,7 +185,7 @@ namespace Laba1
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
-            logic.SaveData();
+            
         }
     }
 }

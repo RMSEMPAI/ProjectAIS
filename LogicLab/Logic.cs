@@ -1,61 +1,49 @@
-﻿using System;
-using ;   
+﻿using Microsoft.EntityFrameworkCore;
+using LogicLab;
+using LogicLib;
+using DataAccessLayer;
+using LogicLibrary;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Xml.Linq;
+using System.Numerics;
 using System.Text;
 using System.Text.Json;
+using System.Xml.Linq;
 
 namespace LogicLib
 {
     public class Logic
     {
-        private IRepository;
-        private string data_path;
+        private IRepository <ITEmployee> _context;
+        public SQLProvider sQLProvider;
+        private static string connectionStr = "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\Users\\stepa\\source\\repos\\Khomkolova\\ProjectAIS\\LogicLab\\Database1.mdf;Integrated Security=True";
         public int nextId = 0;
-        private FileSystemWatcher watcher;
         public DateTime LastSynchronizationDate { get; private set; }
-        /// <summary>
-        /// Конструктор для записи данных
-        /// </summary>
-        public Logic()
+
+        public Logic(SQLProvider sql)
         {
-            data_path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "data.json");
-            if (File.Exists(data_path))
-                employees = JsonSerializer.Deserialize<List<ITEmployee>>(File.ReadAllText(data_path)) ?? new List<ITEmployee>();
-            else
-            {
-                employees = new List<ITEmployee>();
-                File.WriteAllText(data_path, "[]");
-            }
-            nextId = employees.Select(employees => employees.Id).Max() + 1;
-
-            LastSynchronizationDate = DateTime.Now;
-
-            watcher = new FileSystemWatcher(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "data.json");
-            watcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.CreationTime;
-            watcher.Changed += new FileSystemEventHandler(LoadData);
-            watcher.Created += new FileSystemEventHandler(LoadData);
-            watcher.EnableRaisingEvents = true;
-
+            ChangeSQLProvide(sql);
         }
         /// <summary>
         /// Метод, читающий даные
         /// </summary>
         /// <param name="s"></param>
         /// <param name="e"></param>
-        private void LoadData(object s, FileSystemEventArgs e)
+
+        public void ChangeSQLProvide(SQLProvider sql)
         {
-            if (File.Exists(data_path))
-                employees = JsonSerializer.Deserialize<List<ITEmployee>>(File.ReadAllText(data_path)) ?? new List<ITEmployee>();
-            else
+            sQLProvider = sql;
+
+            if (sql == SQLProvider.EF)
             {
-                employees = new List<ITEmployee>();
-                File.WriteAllText(data_path, "[]");
+                var optionsBuilder = new DbContextOptionsBuilder<ITEmployeeContext>();
+                optionsBuilder.UseSqlServer(connectionStr);
+                _context = new EntityRepository<ITEmployee>(new ITEmployeeContext(optionsBuilder.Options));
             }
-            nextId = employees.Select(employees => employees.Id).Max() + 1;
-            LastSynchronizationDate = DateTime.Now;
+            else
+                _context = new DapperRepository<ITEmployee>("ITEmployee", connectionStr);
         }
 
         /// <summary>
@@ -63,9 +51,9 @@ namespace LogicLib
         /// </summary>
         /// <param name="department"></param>
         /// <returns></returns>
-        public List<ITEmployee> GetEmployeesByDepartment(Department department)
+        public List<ITEmployee> GetEmployeeByDepartment(Department department)
         {
-            return GetAllEmployees().Where(e => e.Department == department).ToList();
+            return _context.ReadAll().Where(x => x.Department == department).ToList();
         }
 
         /// <summary>
@@ -73,9 +61,9 @@ namespace LogicLib
         /// </summary>
         /// <param name="position"></param>
         /// <returns></returns>
-        public List<ITEmployee> GetEmployeesByPosition(Position position)
+        public List <ITEmployee> GetEmployeeByPosition(Position position)
         {
-            return GetAllEmployees().Where(e => e.Position == position).ToList();
+            return _context.ReadAll().Where(x => x.Position == position).ToList();
         }
 
         /// <summary>
@@ -83,30 +71,17 @@ namespace LogicLib
         /// </summary>
         /// <param name="employee"></param>
         /// <exception cref="ArgumentNullException"></exception>
-        public void AddEmployee(string fullname, Position position, Department department, decimal salary, int experienceyears)
+        public void AddEmployee(ITEmployee iTEmployee)
         {
-            if (fullname == string.Empty || position == 0 || department == 0 || salary == 0m || experienceyears == 0)
-                throw new ArgumentNullException();
-            else
-            {
-                ITEmployee employee = new ITEmployee(nextId, fullname, position, department, salary, experienceyears);
-                nextId++;
-                employees.Add(employee);
-            }
-            SaveData();
+            _context.Add(iTEmployee);
         }
         /// <summary>
         /// Метод для удаления сотрудника
         /// </summary>
         /// <param name="number"></param>
-        public void RemoveEmployee(int id)
+        public void DeleteEmployee(int id)
         {
-            var employeeToRemove = employees.FirstOrDefault(x => x.Id == id);
-            if (employeeToRemove != null)
-            {
-                employees.Remove(employeeToRemove);
-            }
-            SaveData();
+            _context.Delete(id);
         }
 
         /// <summary>
@@ -114,43 +89,20 @@ namespace LogicLib
         /// </summary>
         /// <param name="id"></param>
         /// <param name="employee"></param>
-        public void UpdateEmployee(int id, ITEmployee employee)
+        public void UpdateEmployee(ITEmployee iTEmployee)
         {
-            var existingEmployee = employees.FirstOrDefault(e => e.Id == id);
-            if (existingEmployee != null)
-            {
-                // Обновляем свойства существующего объекта
-                existingEmployee.FullName = employee.FullName;
-                existingEmployee.Position = employee.Position;
-                existingEmployee.Department = employee.Department;
-                existingEmployee.Salary = employee.Salary;
-                existingEmployee.ExperienceYears = employee.ExperienceYears;
-            }
-            SaveData();
+            _context.Update(iTEmployee);
         }
 
         /// <summary>
         /// Метод, возвращающий всех сотрудников
         /// </summary>
         /// <returns></returns>
-        public List<ITEmployee> GetAllEmployees()
+        public List<ITEmployee> GetAllEmployees(bool sort = false)
         {
-            List<ITEmployee> finallist = new List<ITEmployee>();
-            foreach (var employee in employees)
-            {
-                ITEmployee employeelist = new ITEmployee()
-                {
-                    Id = employee.Id,
-                    FullName = employee.FullName,
-                    Position = employee.Position,
-                    Department = employee.Department,
-                    Salary = employee.Salary,
-                    ExperienceYears = employee.ExperienceYears
-
-                };
-                finallist.Add(employeelist);
-            }
-            return finallist;
+            if (sort)
+                return _context.ReadAll().OrderBy(x => x.Department).ToList();
+            return _context.ReadAll().ToList();
         }
 
         /// <summary>
@@ -166,18 +118,16 @@ namespace LogicLib
             if (employee == null)
                 throw new ArgumentNullException(nameof(employee));
 
-            // Поиск сотрудника по ID
-            var existingEmployee = employees.FirstOrDefault(e => e.Id == employee.Id);
+            var existingEmployee = _context.ReadById(employee.Id);
 
             if (existingEmployee != null)
             {
-                // Изменение отдела
                 existingEmployee.Department = department;
-                SaveData();
-                return true; // Успешно
+                _context.SaveChanges();
+                return true;
             }
 
-            return false; // Если сотрудник не найден
+            return false;
         }
         /// <summary>
         /// Метод проверки пригодности на повышение
@@ -204,7 +154,7 @@ namespace LogicLib
         /// <returns></returns>
         public List<ITEmployee> GetPromoteEmployees()
         {
-            return GetAllEmployees().Where(x => IsPromoteEmployeeBasedOnExperience(x)).ToList();
+            return _context.ReadAll().Where(x => IsPromoteEmployeeBasedOnExperience(x)).ToList();
         }
 
         /// <summary>
@@ -226,26 +176,24 @@ namespace LogicLib
             if (employee == null)
                 throw new ArgumentNullException(nameof(employee));
 
-            // Сохраняем исходную позицию для проверки изменений
             var originalPosition = employee.Position;
 
-            // Повышение на основе опыта
             if (employee.ExperienceYears >= 5 && employee.Position != Position.Senior)
             {
                 employee.Position = Position.Senior;
-                employee.Salary *= 1.25m; // +25% к зарплате
+                employee.Salary *= 1.25m; 
             }
             else if (employee.ExperienceYears >= 3 && employee.Position == Position.Junior)
             {
                 employee.Position = Position.Middle;
-                employee.Salary *= 1.15m; // +15% к зарплате
+                employee.Salary *= 1.15m; 
             }
             else if (employee.ExperienceYears >= 2 && employee.Position == Position.Middle)
             {
-                // Middle может получить повышение зарплаты без смены позиции
-                employee.Salary *= 1.10m; // +10% к зарплате
+                
+                employee.Salary *= 1.10m; 
             }
-            SaveData();
+            _context.SaveChanges();
         }
 
         /// <summary>
@@ -255,15 +203,14 @@ namespace LogicLib
         /// <returns></returns>
         public ITEmployee GetEmployeeById(int id)
         {
-            return employees.FirstOrDefault(e => e.Id == id);
+            return _context.ReadById(id);
         }
 
-        /// <summary>
-        /// Метод, сохраняющий данные
-        /// </summary>
-        public void SaveData()
+
+        public enum SQLProvider
         {
-            File.WriteAllText(data_path, JsonSerializer.Serialize(employees));
+            EF,
+            Dapper
         }
     }
 }

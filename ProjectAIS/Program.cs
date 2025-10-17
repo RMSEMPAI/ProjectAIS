@@ -13,7 +13,7 @@ namespace ConsoleApp1
         private static List<string> all_departments = Enum.GetNames(typeof(Department)).ToList();
         static void Main(string[] args)
         {
-            Logic logic = new Logic();
+            Logic logic = new Logic(Logic.SQLProvider.EF);
 
             string command;
 
@@ -46,7 +46,6 @@ namespace ConsoleApp1
                         PromoteEmployeeInProgram(logic);
                         break;
                     case "8":
-                        logic.SaveData();
                         break;
                 }
             } while (command != "exit");
@@ -78,7 +77,7 @@ namespace ConsoleApp1
                 return;
             }
             Console.WriteLine();
-            foreach (var i in logic.GetEmployeesByPosition(res))
+            foreach (var i in logic.GetEmployeeByPosition(res))
                 Console.WriteLine($"Id:{i.Id} ФИО:{i.FullName};  Отдел:{i.Department}; Позиция:{i.Position}; Опыт:{i.ExperienceYears} лет; Зарплата:{i.Salary}");
             Console.WriteLine();
         }
@@ -97,7 +96,7 @@ namespace ConsoleApp1
                 return;
             }
             Console.WriteLine();
-            foreach (var i in logic.GetEmployeesByDepartment(res))
+            foreach (var i in logic.GetEmployeeByDepartment(res))
                 Console.WriteLine($"Id:{i.Id} ФИО:{i.FullName};  Отдел:{i.Department}; Позиция:{i.Position}; Опыт:{i.ExperienceYears} лет; Зарплата:{i.Salary}");
             Console.WriteLine();
         }
@@ -162,7 +161,7 @@ namespace ConsoleApp1
                 Console.WriteLine("Введите опыт работы числом!!!");
             }
             try
-            { logic.AddEmployee(fullname, position1, department1, salary, experienceyears); }
+            { logic.AddEmployee(new ITEmployee { FullName = fullname, Position = position1, Department = department1, Salary = salary, ExperienceYears = experienceyears }); }
             catch
             {
                 Console.WriteLine("Ошибка!");
@@ -186,7 +185,7 @@ namespace ConsoleApp1
                 Console.Write("Введите id специалиста для удаления: \n");
                 int id = Convert.ToInt32(Console.ReadLine());
 
-                try { logic.RemoveEmployee(id); }
+                try { logic.DeleteEmployee(id); }
                 catch
                 {
                     Console.WriteLine("Ошибка!");
@@ -259,7 +258,7 @@ namespace ConsoleApp1
 
             try
             {
-                logic.UpdateEmployee(id, updatedEmployee);
+                logic.UpdateEmployee(updatedEmployee);
                 Console.WriteLine("Данные специалиста успешно обновлены!");
             }
             catch (Exception ex)
@@ -329,7 +328,7 @@ namespace ConsoleApp1
                     Console.WriteLine($"Повышение зарплаты: {employee.Salary - originalSalary} руб.");
 
                     // Сохраняем изменения
-                    logic.UpdateEmployee(employee.Id, employee);
+                    logic.UpdateEmployee(employee);
                 }
                 else
                 {
@@ -426,7 +425,7 @@ namespace ConsoleApp1
                     Console.WriteLine($"Новый отдел: {newDepartment}");
 
                     // Обновляем основные данные сотрудника
-                    logic.UpdateEmployee(employee.Id, employee);
+                    logic.UpdateEmployee(employee);
                 }
                 else
                 {
