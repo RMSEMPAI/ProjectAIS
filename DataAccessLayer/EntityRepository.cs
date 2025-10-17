@@ -1,42 +1,67 @@
-﻿using LogicLab;
+﻿using DataAccessLayer;
+using LogicLab;
+using LogicLib;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Dapper.SqlMapper;
 
-namespace DataAccessLayer
+namespace LogicLibrary
 {
-    internal class EntityRepository<T> : IRepository<T> where T : IDomainObject
+    public class EntityRepository<T> : IRepository<T> where T : class, IDomainObject, IComparable<T>, new()
     {
+        private ITEmployee _context;
+
+        public EntityRepository(ITEmployee context)
+        {
+            _context = context;
+        }
+
         public void Add(T entity)
         {
-            throw new NotImplementedException();
+            _context.Set<T>().Add(entity);
+            SaveChanges();
         }
 
         public bool Delete(int id)
         {
-            throw new NotImplementedException();
+            var entity = ReadById(id);
+            if (entity != null)
+            {
+                _context.Set<T>().Remove(entity);
+                SaveChanges();
+                return true;
+            }
+            return false;
         }
 
         public IEnumerable<T> ReadAll()
         {
-            throw new NotImplementedException();
+            return _context.Set<T>().AsNoTracking().ToList();
         }
 
         public T ReadById(int id)
         {
-            throw new NotImplementedException();
-        }
-
-        public void SaveChanges()
-        {
-            throw new NotImplementedException();
+            var entity = _context.Set<T>().Find(id);
+            if (entity != null)
+            {
+                _context.Entry(entity).State = EntityState.Detached;
+            }
+            return entity;
         }
 
         public void Update(T entity)
         {
-            throw new NotImplementedException();
+            _context.Set<T>().Update(entity);
+            SaveChanges();
+        }
+
+        public void SaveChanges()
+        {
+            _context.SaveChanges();
         }
     }
 }

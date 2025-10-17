@@ -1,4 +1,5 @@
 ﻿using System;
+using ;   
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace LogicLib
 {
     public class Logic
     {
-        private List<ITEmployee> employees;
+        private IRepository;
         private string data_path;
         public int nextId = 0;
         private FileSystemWatcher watcher;
