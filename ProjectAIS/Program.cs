@@ -273,7 +273,6 @@ namespace ConsoleApp1
         public static void PromoteEmployeeInProgram(Logic logic)
         {
 
-            // Получаем список всех сотрудников
             var allEmployees = logic.GetAllEmployees();
             if (!allEmployees.Any(x => logic.IsPromoteEmployeeBasedOnExperience(x)))
             {
@@ -281,14 +280,12 @@ namespace ConsoleApp1
                 return;
             }
 
-            // Показываем список сотрудников
             Console.WriteLine("\nСписок сотрудников:");
             foreach (var emp in logic.GetPromoteEmployees())
             {
                 Console.WriteLine($"ID: {emp.Id} | {emp.FullName} | {emp.Position} | Опыт: {emp.ExperienceYears} лет | Зарплата: {emp.Salary} руб.");
             }
 
-            // Выбор сотрудника
             Console.Write("\nВведите ID сотрудника для повышения: ");
             if (!int.TryParse(Console.ReadLine(), out int employeeId))
             {
@@ -296,7 +293,6 @@ namespace ConsoleApp1
                 return;
             }
 
-            // Находим сотрудника
             var employee = logic.GetEmployeeById(employeeId);
             if (employee == null)
             {
@@ -304,30 +300,25 @@ namespace ConsoleApp1
                 return;
             }
 
-            // Показываем текущие данные
             Console.WriteLine($"\nТекущие данные сотрудника:");
             Console.WriteLine($"Имя: {employee.FullName}");
             Console.WriteLine($"Должность: {employee.Position}");
             Console.WriteLine($"Опыт: {employee.ExperienceYears} лет");
             Console.WriteLine($"Зарплата: {employee.Salary} руб.");
 
-            // Проверяем возможность повышения
             var originalPosition = employee.Position;
             var originalSalary = employee.Salary;
 
             try
             {
-                // Применяем повышение
                 logic.PromoteEmployeeBasedOnExperience(employee);
 
-                // Проверяем, было ли повышение
                 if (employee.Position != originalPosition || employee.Salary != originalSalary)
                 {
                     Console.WriteLine($"Новая должность: {employee.Position}");
                     Console.WriteLine($"Новая зарплата: {employee.Salary} руб.");
                     Console.WriteLine($"Повышение зарплаты: {employee.Salary - originalSalary} руб.");
 
-                    // Сохраняем изменения
                     logic.UpdateEmployee(employee);
                 }
                 else
@@ -351,7 +342,6 @@ namespace ConsoleApp1
         public static void ChangeEmployeeDepartment(Logic logic)
         {
 
-            // Получаем список всех сотрудников
             var allEmployees = logic.GetAllEmployees();
             if (!allEmployees.Any())
             {
@@ -359,14 +349,12 @@ namespace ConsoleApp1
                 return;
             }
 
-            // Показываем список сотрудников
             Console.WriteLine("\nСписок сотрудников:");
             foreach (var emp in allEmployees)
             {
                 Console.WriteLine($"ID: {emp.Id} | {emp.FullName} | {emp.Department} | {emp.Position}");
             }
 
-            // Выбор сотрудника
             Console.Write("\nВведите ID сотрудника для изменения отдела: ");
             if (!int.TryParse(Console.ReadLine(), out int employeeId))
             {
@@ -374,7 +362,6 @@ namespace ConsoleApp1
                 return;
             }
 
-            // Находим сотрудника
             var employee = logic.GetEmployeeById(employeeId);
             if (employee == null)
             {
@@ -385,7 +372,6 @@ namespace ConsoleApp1
             Console.WriteLine($"\nВыбран сотрудник: {employee.FullName}");
             Console.WriteLine($"Текущий отдел: {employee.Department}");
 
-            // Выбор нового отдела
             Department newDepartment;
             while (true)
             {
@@ -407,14 +393,12 @@ namespace ConsoleApp1
                 Console.WriteLine("Неверное название отдела! Попробуйте снова.");
             }
 
-            // Проверяем, не совпадает ли текущий отдел с новым
             if (employee.Department == newDepartment)
             {
                 Console.WriteLine($"Сотрудник уже работает в отделе {newDepartment}!");
                 return;
             }
 
-            // Выполняем изменение отдела
             try
             {
                 bool success = logic.UpdateDepartmentEmployee(newDepartment, employee);
@@ -424,7 +408,6 @@ namespace ConsoleApp1
                     Console.WriteLine($"Сотрудник: {employee.FullName}");
                     Console.WriteLine($"Новый отдел: {newDepartment}");
 
-                    // Обновляем основные данные сотрудника
                     logic.UpdateEmployee(employee);
                 }
                 else

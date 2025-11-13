@@ -11,7 +11,6 @@ using static Dapper.SqlMapper;
 
 namespace LogicLibrary
 {
-    // EntityRepository - ИСПРАВЛЕННАЯ ВЕРСИЯ
     public class EntityRepository<T> : IRepository<T> where T : class, IDomainObject, new()
     {
         private readonly ITEmployeeContext _context;
@@ -42,7 +41,7 @@ namespace LogicLibrary
 
         public IEnumerable<T> ReadAll()
         {
-            return _context.Set<T>().AsNoTracking().ToList(); // AsNoTracking для производительности
+            return _context.Set<T>().AsNoTracking().ToList(); 
         }
 
         public T ReadById(int id)

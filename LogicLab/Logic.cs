@@ -122,13 +122,12 @@ namespace LogicLib
 
             if (existingEmployee != null)
             {
-                // Создаем копию с обновленным отделом
                 var updatedEmployee = new ITEmployee
                 {
                     Id = existingEmployee.Id,
                     FullName = existingEmployee.FullName,
                     Position = existingEmployee.Position,
-                    Department = department, // Обновляем отдел
+                    Department = department,
                     Salary = existingEmployee.Salary,
                     ExperienceYears = existingEmployee.ExperienceYears
                 };

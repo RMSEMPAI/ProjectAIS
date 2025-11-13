@@ -21,14 +21,13 @@ namespace LogicLibrary
         {
             using (var connection = new SqlConnection(_connectionString))
             {
-                // Если ID = 0, генерируем новый
                 if (entity.Id == 0)
                 {
                     entity.Id = GetNextId(connection);
                 }
 
                 var properties = typeof(T).GetProperties()
-                    .Where(p => p.Name != "Id") // Исключаем Id если он автоинкрементный
+                    .Where(p => p.Name != "Id") 
                     .Select(p => p.Name);
 
                 var columns = string.Join(", ", properties);

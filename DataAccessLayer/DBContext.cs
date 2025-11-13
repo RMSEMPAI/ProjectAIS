@@ -7,14 +7,12 @@ namespace DataAccessLayer
     {
         public ITEmployeeContext(DbContextOptions<ITEmployeeContext> options) : base(options) { }
 
-        // ИСПРАВЛЕНО: Указываем точное имя таблицы
         public DbSet<ITEmployee> ITEmployees { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Явно указываем имя таблицы
             modelBuilder.Entity<ITEmployee>()
-                .ToTable("ITEmployee") // ← ВАЖНО: указываем точное имя таблицы в БД
+                .ToTable("ITEmployee") 
                 .HasKey(e => e.Id);
 
             modelBuilder.Entity<ITEmployee>()

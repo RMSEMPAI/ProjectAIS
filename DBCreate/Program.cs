@@ -30,7 +30,6 @@ namespace DBCreate
 
                 var connectionString = $"Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\Users\\stepa\\source\\repos\\Khomkolova\\ProjectAIS\\DataAccessLayer\\Database1.mdf;Integrated Security=True;";
 
-                // Сначала создадим таблицу через Dapper с правильным именем
                 CreateTableIfNotExists(connectionString);
 
                 var optionsBuilder = new DbContextOptionsBuilder<ITEmployeeContext>();
@@ -38,14 +37,12 @@ namespace DBCreate
 
                 using var context = new ITEmployeeContext(optionsBuilder.Options);
 
-                // Создаем БД если не существует
                 context.Database.EnsureCreated();
 
                 var _iTEmployeeRepository = new EntityRepository<ITEmployee>(context);
 
                 Console.WriteLine($"Найдено {data.Count} записей в JSON файле");
 
-                // Получаем следующий доступный ID
                 int nextId = GetNextAvailableId(connectionString);
 
                 int successCount = 0;
@@ -55,7 +52,6 @@ namespace DBCreate
                 {
                     try
                     {
-                        // Проверяем валидность данных
                         if (string.IsNullOrWhiteSpace(employee.FullName))
                         {
                             Console.WriteLine($"Пропуск сотрудника - пустое имя");
@@ -63,13 +59,11 @@ namespace DBCreate
                             continue;
                         }
 
-                        // Генерируем новый ID если текущий = 0
                         if (employee.Id == 0)
                         {
                             employee.Id = nextId++;
                         }
 
-                        // Проверяем, существует ли уже сотрудник с таким ID
                         var existing = _iTEmployeeRepository.ReadById(employee.Id);
                         if (existing == null)
                         {
@@ -123,7 +117,6 @@ namespace DBCreate
                 using var connection = new SqlConnection(connectionString);
                 connection.Open();
 
-                // Проверяем, существует ли таблица и есть ли в ней данные
                 var tableExists = connection.ExecuteScalar<int?>(
                     "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'ITEmployee'");
 
@@ -133,7 +126,7 @@ namespace DBCreate
                     return (maxId ?? 0) + 1;
                 }
 
-                return 1; // Начинаем с 1 если таблица пустая
+                return 1; 
             }
             catch (Exception ex)
             {

@@ -16,8 +16,6 @@ namespace LogicLib
         public decimal Salary { get; set; }
         public int ExperienceYears { get; set; }
 
-        // Конструктор
-
         public ITEmployee(int id, string fullName, Position position, Department department, decimal salary, int experienceYears)
         {
             Id = id;
