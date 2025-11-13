@@ -17,15 +17,10 @@ namespace DBCreate
             {
                 var _mainPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Lab1Data");
 
-                // Добавляем обработку enum при десериализации
-                var options = new JsonSerializerOptions
-                {
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                    Converters = { new JsonStringEnumConverter() }
-                };
+                
 
                 var jsonData = File.ReadAllText("C:\\Users\\stepa\\AppData\\Roaming\\data.json");
-                var data = JsonSerializer.Deserialize<List<ITEmployee>>(jsonData, options);
+                var data = JsonSerializer.Deserialize<List<ITEmployee>>(jsonData);
 
                 if (data == null || !data.Any())
                 {

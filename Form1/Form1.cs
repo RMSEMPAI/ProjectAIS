@@ -34,11 +34,6 @@ namespace Laba1
             checkBox1.Checked = true;
 
             LastSynchronizationDate = DateTime.Now;
-            timer = new System.Windows.Forms.Timer();
-            timer.Interval = 1000;
-            timer.Tick += (s, e) => UpdateData();
-            timer.Start();
-
             ShowData();
         }
         private void UpdateData()
