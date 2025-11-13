@@ -23,6 +23,7 @@ namespace LogicLibrary
 
         public void Add(T entity)
         {
+            entity.Id = ReadAll().Max(x => x.Id+1);
             _context.Set<T>().Add(entity);
             SaveChanges();
         }
@@ -51,13 +52,8 @@ namespace LogicLibrary
 
         public void Update(T entity)
         {
-            // Отслеживаем сущность перед обновлением
-            var existing = _context.Set<T>().Find(entity.Id);
-            if (existing != null)
-            {
-                _context.Entry(existing).CurrentValues.SetValues(entity);
-                SaveChanges();
-            }
+            _context.Set<T>().Update(entity);
+            _context.SaveChanges();
         }
 
         public void SaveChanges()

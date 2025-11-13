@@ -18,6 +18,7 @@ namespace Laba1
         private Action<ITEmployee> action;
         private List<string> all_positions;
         private List<string> all_departments;
+        private int? id;
         public UpdateEmployee(EventForm eventForm, Action<ITEmployee> action, List<string> all_positions, List<string> all_departments)
         {
             InitializeComponent();
@@ -36,6 +37,7 @@ namespace Laba1
         }
         public void SetEmployee(ITEmployee employee)
         {
+            id = employee.Id;
             textBox1.Text = employee.FullName;
             textBox4.Text = employee.Salary.ToString();
             textBox5.Text = employee.ExperienceYears.ToString();
@@ -65,7 +67,10 @@ namespace Laba1
                 MessageBox.Show("Введите целое число для стажа");
                 return;
             }
-            action(new ITEmployee { FullName = fio, Position = pos, Department = depart, Salary = salary, ExperienceYears = exp });
+            var employee = new ITEmployee { FullName = fio, Position = pos, Department = depart, Salary = salary, ExperienceYears = exp };
+            if (id != null)
+                employee.Id = (int)id;
+            action(employee);
             this.Close();
         }
     }
