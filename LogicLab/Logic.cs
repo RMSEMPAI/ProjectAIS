@@ -18,7 +18,7 @@ namespace LogicLib
     {
         private IRepository <ITEmployee> _context;
         public SQLProvider sQLProvider;
-        private static string connectionStr = "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\Users\\stepa\\source\\repos\\Khomkolova\\ProjectAIS\\LogicLab\\Database1.mdf;Integrated Security=True";
+        private static string connectionStr = "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\Users\\stepa\\source\\repos\\Khomkolova\\ProjectAIS\\DataAccessLayer\\Database1.mdf;Integrated Security=True";
         public int nextId = 0;
         public DateTime LastSynchronizationDate { get; private set; }
 
@@ -122,11 +122,20 @@ namespace LogicLib
 
             if (existingEmployee != null)
             {
-                existingEmployee.Department = department;
-                _context.SaveChanges();
+                // Создаем копию с обновленным отделом
+                var updatedEmployee = new ITEmployee
+                {
+                    Id = existingEmployee.Id,
+                    FullName = existingEmployee.FullName,
+                    Position = existingEmployee.Position,
+                    Department = department, // Обновляем отдел
+                    Salary = existingEmployee.Salary,
+                    ExperienceYears = existingEmployee.ExperienceYears
+                };
+
+                _context.Update(updatedEmployee);
                 return true;
             }
-
             return false;
         }
         /// <summary>

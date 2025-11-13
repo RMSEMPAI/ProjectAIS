@@ -11,9 +11,10 @@ using static Dapper.SqlMapper;
 
 namespace LogicLibrary
 {
+    // EntityRepository - ИСПРАВЛЕННАЯ ВЕРСИЯ
     public class EntityRepository<T> : IRepository<T> where T : class, IDomainObject, new()
     {
-        private ITEmployeeContext _context;
+        private readonly ITEmployeeContext _context;
 
         public EntityRepository(ITEmployeeContext context)
         {
@@ -28,7 +29,7 @@ namespace LogicLibrary
 
         public bool Delete(int id)
         {
-            var entity = ReadById(id);
+            var entity = _context.Set<T>().Find(id);
             if (entity != null)
             {
                 _context.Set<T>().Remove(entity);
@@ -40,23 +41,23 @@ namespace LogicLibrary
 
         public IEnumerable<T> ReadAll()
         {
-            return _context.Set<T>().AsNoTracking().ToList();
+            return _context.Set<T>().AsNoTracking().ToList(); // AsNoTracking для производительности
         }
 
         public T ReadById(int id)
         {
-            var entity = _context.Set<T>().Find(id);
-            if (entity != null)
-            {
-                _context.Entry(entity).State = EntityState.Detached;
-            }
-            return entity;
+            return _context.Set<T>().AsNoTracking().FirstOrDefault(e => e.Id == id);
         }
 
         public void Update(T entity)
         {
-            _context.Set<T>().Update(entity);
-            SaveChanges();
+            // Отслеживаем сущность перед обновлением
+            var existing = _context.Set<T>().Find(entity.Id);
+            if (existing != null)
+            {
+                _context.Entry(existing).CurrentValues.SetValues(entity);
+                SaveChanges();
+            }
         }
 
         public void SaveChanges()

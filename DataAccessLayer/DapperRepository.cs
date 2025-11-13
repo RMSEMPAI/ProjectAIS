@@ -2,9 +2,7 @@
 using DataAccessLayer;
 using LogicLab;
 using Microsoft.Data.SqlClient;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Data;
 
 namespace LogicLibrary
 {
@@ -23,8 +21,14 @@ namespace LogicLibrary
         {
             using (var connection = new SqlConnection(_connectionString))
             {
+                // Если ID = 0, генерируем новый
+                if (entity.Id == 0)
+                {
+                    entity.Id = GetNextId(connection);
+                }
+
                 var properties = typeof(T).GetProperties()
-                    .Where(p => p.Name != "Id")
+                    .Where(p => p.Name != "Id") // Исключаем Id если он автоинкрементный
                     .Select(p => p.Name);
 
                 var columns = string.Join(", ", properties);
@@ -63,6 +67,12 @@ namespace LogicLibrary
                     $"SELECT * FROM {_tableName} WHERE Id = @Id",
                     new { Id = id });
             }
+        }
+
+        private int GetNextId(SqlConnection connection)
+        {
+            var maxId = connection.ExecuteScalar<int?>($"SELECT MAX(Id) FROM {_tableName}");
+            return (maxId ?? 0) + 1;
         }
 
         public void Update(T entity)
