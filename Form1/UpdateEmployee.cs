@@ -1,4 +1,5 @@
-﻿using LogicLib;
+﻿using DataAccessLayer;
+using LogicLib;
 using Microsoft.VisualBasic.Logging;
 using System;
 using System.Collections.Generic;
@@ -15,11 +16,11 @@ namespace Laba1
 {
     public partial class UpdateEmployee : Form
     {
-        private Action<ITEmployee> action;
+        private Action<ITEmployee,string> action;
         private List<string> all_positions;
         private List<string> all_departments;
         private int? id;
-        public UpdateEmployee(EventForm eventForm, Action<ITEmployee> action, List<string> all_positions, List<string> all_departments)
+        public UpdateEmployee(EventForm eventForm, Action<ITEmployee, string> action, List<string> all_positions, List<string> all_departments)
         {
             InitializeComponent();
             this.action = action;
@@ -52,7 +53,13 @@ namespace Laba1
             var fio = textBox1.Text.Trim();
             if (string.IsNullOrEmpty(fio) || string.IsNullOrWhiteSpace(fio))
             {
-                MessageBox.Show("фио не должно быть пустым");
+                MessageBox.Show("ФИО не должно быть пустым");
+                return;
+            }
+            var languagesProgramm = textBox2.Text.Trim();
+            if (string.IsNullOrEmpty(languagesProgramm) || string.IsNullOrWhiteSpace(languagesProgramm))
+            {
+                MessageBox.Show("Язык программирования не должно быть пустым");
                 return;
             }
             var pos = (Position)comboBox1.SelectedIndex;
@@ -70,8 +77,18 @@ namespace Laba1
             var employee = new ITEmployee { FullName = fio, Position = pos, Department = depart, Salary = salary, ExperienceYears = exp };
             if (id != null)
                 employee.Id = (int)id;
-            action(employee);
+            action(employee, languagesProgramm);
             this.Close();
+        }
+
+        private void label7_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void comboBox3_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
         }
     }
     public enum EventForm

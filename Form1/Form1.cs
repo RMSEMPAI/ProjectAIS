@@ -19,6 +19,7 @@ namespace Laba1
     {
         private static List<string> all_positions = Enum.GetNames(typeof(Position)).ToList();
         private static List<string> all_departments = Enum.GetNames(typeof(Department)).ToList();
+        private List<ITEmployee> currentEmployeeList = new List<ITEmployee>();
         private System.Windows.Forms.Timer timer;
         private DateTime LastSynchronizationDate;
         private Logic logic;
@@ -42,16 +43,24 @@ namespace Laba1
         }
         public void ShowData()
         {
+            var list = new List<ITEmployee>();
             if (checkBox1.Checked)
-                dataGridView1.DataSource = logic.GetAllEmployees();
+                list = logic.GetAllEmployees();
             else if (checkBox2.Checked)
-                dataGridView1.DataSource = logic.GetEmployeeByPosition((Position)comboBox1.SelectedIndex);
+                list = logic.GetEmployeeByPosition((Position)comboBox1.SelectedIndex);
             else if (checkBox3.Checked)
-                dataGridView1.DataSource = logic.GetEmployeeByDepartment((Department)comboBox2.SelectedIndex);
+                list = logic.GetEmployeeByDepartment((Department)comboBox2.SelectedIndex);
             else if (checkBox4.Checked)
-                dataGridView1.DataSource = logic.GetPromoteEmployees();
-            else
-                dataGridView1.DataSource = new List<ITEmployee>();
+                list = logic.GetPromoteEmployees();
+
+            var lObj = new List<object>();
+
+            foreach (var i in list)
+            {
+                lObj.Add(new { ID = i.Id, FullName = i.FullName, Position = i.Position, Department = i.Department, Salary = i.Salary, ExperienceYears = i.ExperienceYears, Language = i.Language.Name });
+            }
+
+            dataGridView1.DataSource = lObj;
         }
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
@@ -120,8 +129,8 @@ namespace Laba1
                 MessageBox.Show("Выберите работника");
                 return;
             }
-            Action<ITEmployee> update = (ITEmployee e) => {
-                logic.UpdateEmployee(e);
+            Action<ITEmployee,string> update = (ITEmployee e,string s) => {
+                logic.UpdateEmployee(e,s);
             };
             var form = new UpdateEmployee(EventForm.AddOrUpdate, update, all_positions, all_departments);
             form.SetEmployee(logic.GetEmployeeById((int)dataGridView1.SelectedRows[0].Cells[0].Value));
@@ -156,7 +165,7 @@ namespace Laba1
                 MessageBox.Show("Выберите работника");
                 return;
             }
-            Action<ITEmployee> update = (ITEmployee e) => {
+            Action<ITEmployee,string> update = (ITEmployee e, string s) => {
                 logic.UpdateEmployee(e);
             };
             var form = new UpdateEmployee(EventForm.ShiftDepartment, update, all_positions, all_departments);

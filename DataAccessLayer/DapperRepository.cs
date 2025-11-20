@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using DataAccessLayer;
 using LogicLab;
+using LogicLib;
 using Microsoft.Data.SqlClient;
 using System.Data;
 
@@ -54,7 +55,38 @@ namespace LogicLibrary
         {
             using (var connection = new SqlConnection(_connectionString))
             {
-                return connection.Query<T>($"SELECT * FROM {_tableName}");
+                if (typeof(T) == typeof(ITEmployee))
+                {
+                    // Специальный запрос с JOIN для ITEmployee
+                    const string sql = @"
+                    SELECT e.*, l.Name AS LanguageName 
+                    FROM ITEmployee e
+                    LEFT JOIN Languages l ON e.LanguageId = l.Id";
+
+                    var lookup = new Dictionary<int, ITEmployee>();
+
+                    connection.Query<ITEmployee, Language, ITEmployee>(
+                        sql,
+                        (employee, language) =>
+                        {
+                            if (!lookup.TryGetValue(employee.Id, out var current))
+                            {
+                                current = employee;
+                                current.Language = new Language { Name = language?.Name }; // Заполняем только Name
+                                lookup.Add(current.Id, current);
+                            }
+                            return current;
+                        },
+                        splitOn: "LanguageName"
+                    );
+
+                    return lookup.Values.Cast<T>();
+                }
+                else
+                {
+                    // Стандартный запрос для других сущностей
+                    return connection.Query<T>($"SELECT * FROM {_tableName}");
+                }
             }
         }
 
@@ -67,6 +99,7 @@ namespace LogicLibrary
                     new { Id = id });
             }
         }
+
 
         private int GetNextId(SqlConnection connection)
         {

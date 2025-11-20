@@ -16,11 +16,11 @@ namespace LogicLib
 {
     public class Logic
     {
+        private IRepository<Language> _languageContext;
         private IRepository <ITEmployee> _context;
         public SQLProvider sQLProvider;
         private static string connectionStr = "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\Users\\stepa\\source\\repos\\Khomkolova\\ProjectAIS\\DataAccessLayer\\Database1.mdf;Integrated Security=True";
         public int nextId = 0;
-        public DateTime LastSynchronizationDate { get; private set; }
 
         public Logic(SQLProvider sql)
         {
@@ -40,10 +40,14 @@ namespace LogicLib
             {
                 var optionsBuilder = new DbContextOptionsBuilder<ITEmployeeContext>();
                 optionsBuilder.UseSqlServer(connectionStr);
-                _context = new EntityRepository<ITEmployee>(new ITEmployeeContext(optionsBuilder.Options));
+                var context = new ITEmployeeContext(optionsBuilder.Options);
+
+                _context = new EntityRepository<ITEmployee>(context);
+                _languageContext = new EntityRepository<Language>(context); // Новый репозиторий
             }
             else
                 _context = new DapperRepository<ITEmployee>("ITEmployee", connectionStr);
+            _languageContext = new DapperRepository<Language>("Languages", connectionStr); // Новый репозиторий
         }
 
         /// <summary>
@@ -71,9 +75,23 @@ namespace LogicLib
         /// </summary>
         /// <param name="employee"></param>
         /// <exception cref="ArgumentNullException"></exception>
-        public void AddEmployee(ITEmployee iTEmployee)
+        public void AddEmployee(ITEmployee employee,string languages = "Unknow")
         {
-            _context.Add(iTEmployee);
+            var language = _languageContext.ReadAll().Where(x => x.Name ==languages).FirstOrDefault();
+
+            
+
+            if (language == null)
+            {
+                throw new ArgumentException($"Язык с ID {employee.LanguageId} не существует");
+            }
+
+            if (employee.LanguageId == 0)
+            {
+                employee.LanguageId = language.Id;
+            }
+
+            _context.Add(employee);
         }
         /// <summary>
         /// Метод для удаления сотрудника
@@ -93,18 +111,35 @@ namespace LogicLib
         {
             _context.Update(iTEmployee);
         }
+        public void UpdateEmployee(ITEmployee employee, string languages)
+        {
+            var language = _languageContext.ReadAll().Where(x => x.Name == languages).FirstOrDefault();
 
+            if (language == null)
+            {
+                throw new ArgumentException($"Язык с ID {employee.LanguageId} не существует");
+            }
+
+            if(employee.LanguageId == 0)
+            {
+                employee.LanguageId = language.Id;
+            }
+
+            _context.Update(employee);
+        }
         /// <summary>
         /// Метод, возвращающий всех сотрудников
         /// </summary>
         /// <returns></returns>
         public List<ITEmployee> GetAllEmployees(bool sort = false)
         {
-            if (sort)
-                return _context.ReadAll().OrderBy(x => x.Department).ToList();
-            return _context.ReadAll().ToList();
-        }
+            var employees = _context.ReadAll(); // Для EF здесь уже будет загружен Language
 
+            if (sort)
+                return employees.OrderBy(x => x.Department).ToList();
+
+            return employees.ToList();
+        }
         /// <summary>
         /// Метод для изменения отдела сотрудника
         /// </summary>
@@ -219,6 +254,24 @@ namespace LogicLib
         {
             EF,
             Dapper
+        }
+
+        // Новые методы для работы с языками
+        public List<Language> GetAllLanguages()
+        {
+            return _languageContext.ReadAll().ToList();
+        }
+
+        public Language GetLanguageById(int id)
+        {
+            return _languageContext.ReadById(id);
+        }
+
+        public List<ITEmployee> GetEmployeesByLanguage(int languageId)
+        {
+            return _context.ReadAll()
+                .Where(e => e.LanguageId == languageId)
+                .ToList();
         }
     }
 }

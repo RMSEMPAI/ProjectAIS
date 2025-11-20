@@ -20,6 +20,7 @@ namespace LogicLibrary
             _context = context;
         }
 
+
         public void Add(T entity)
         {
             entity.Id = ReadAll().Max(x => x.Id+1);
@@ -41,12 +42,29 @@ namespace LogicLibrary
 
         public IEnumerable<T> ReadAll()
         {
-            return _context.Set<T>().AsNoTracking().ToList(); 
+            var query = _context.Set<T>().AsQueryable();
+
+            // Автоматически включаем Language для ITEmployee
+            if (typeof(T) == typeof(ITEmployee))
+            {
+                query = query.Include(e => (e as ITEmployee).Language);
+            }
+
+            return query.AsNoTracking().ToList();
         }
+
+
 
         public T ReadById(int id)
         {
-            return _context.Set<T>().AsNoTracking().FirstOrDefault(e => e.Id == id);
+            var query = _context.Set<T>().AsQueryable();
+
+            if (typeof(T) == typeof(ITEmployee))
+            {
+                query = query.Include(e => (e as ITEmployee).Language);
+            }
+
+            return query.AsNoTracking().FirstOrDefault(e => e.Id == id);
         }
 
         public void Update(T entity)

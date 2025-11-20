@@ -9,157 +9,269 @@ using System.Text.Json.Serialization;
 
 namespace DBCreate
 {
+    // Временный класс для десериализации JSON
+    public class TempEmployee
+    {
+        public int Id { get; set; }
+        public string FullName { get; set; }
+        public Position Position { get; set; }
+        public Department Department { get; set; }
+        public decimal Salary { get; set; }
+        public int ExperienceYears { get; set; }
+    }
+
     internal class Program
     {
         public static void Main(string[] args)
         {
             try
             {
-                var _mainPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Lab1Data");
+                var jsonFilePath = "C:\\Users\\stepa\\AppData\\Roaming\\data.json";
 
-                
-
-                var jsonData = File.ReadAllText("C:\\Users\\stepa\\AppData\\Roaming\\data.json");
-                var data = JsonSerializer.Deserialize<List<ITEmployee>>(jsonData);
-
-                if (data == null || !data.Any())
+                if (!File.Exists(jsonFilePath))
                 {
-                    Console.WriteLine("Нет данных для импорта");
+                    Console.WriteLine($"Файл {jsonFilePath} не найден!");
                     return;
                 }
 
                 var connectionString = $"Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\Users\\stepa\\source\\repos\\Khomkolova\\ProjectAIS\\DataAccessLayer\\Database1.mdf;Integrated Security=True;";
 
-                CreateTableIfNotExists(connectionString);
+                CreateTablesIfNotExists(connectionString);
 
-                var optionsBuilder = new DbContextOptionsBuilder<ITEmployeeContext>();
-                optionsBuilder.UseSqlServer(connectionString);
+                Console.WriteLine("Чтение JSON файла...");
+                var jsonData = File.ReadAllText(jsonFilePath);
 
-                using var context = new ITEmployeeContext(optionsBuilder.Options);
+                // ДЕСЕРИАЛИЗАЦИЯ через временный класс
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    Converters = { new JsonStringEnumConverter() }
+                };
 
-                context.Database.EnsureCreated();
+                var tempData = JsonSerializer.Deserialize<List<TempEmployee>>(jsonData, options);
 
-                var _iTEmployeeRepository = new EntityRepository<ITEmployee>(context);
+                if (tempData == null)
+                {
+                    Console.WriteLine("ОШИБКА: Не удалось десериализовать JSON");
+                    return;
+                }
 
-                Console.WriteLine($"Найдено {data.Count} записей в JSON файле");
+                if (!tempData.Any())
+                {
+                    Console.WriteLine("Нет данных для импорта");
+                    return;
+                }
 
-                int nextId = GetNextAvailableId(connectionString);
+                Console.WriteLine($"Найдено {tempData.Count} записей в JSON файле");
+
+                // Проверяем первый сотрудник после преобразования
+                var firstEmployee = tempData.First();
+                Console.WriteLine($"Первый сотрудник: ID={firstEmployee.Id}, Name='{firstEmployee.FullName}'");
+
+                // Получаем доступные языки
+                var availableLanguages = GetLanguages(connectionString);
+
+                if (!availableLanguages.Any())
+                {
+                    Console.WriteLine("ОШИБКА: В таблице Languages нет данных!");
+                    return;
+                }
+
+                Console.WriteLine($"Доступно языков в базе: {availableLanguages.Count}");
 
                 int successCount = 0;
                 int skippedCount = 0;
+                var random = new Random();
 
-                foreach (var employee in data)
+                // Используем Dapper для вставки данных
+                using var connection = new SqlConnection(connectionString);
+                connection.Open();
+
+                foreach (var employee in tempData)
                 {
                     try
                     {
-                        if (string.IsNullOrWhiteSpace(employee.FullName))
+                        // Проверяем, что данные корректны
+                        if (employee.Id == 0 || string.IsNullOrWhiteSpace(employee.FullName))
                         {
-                            Console.WriteLine($"Пропуск сотрудника - пустое имя");
+                            Console.WriteLine($"❌ Пропуск сотрудника - некорректные данные: ID={employee.Id}, Name='{employee.FullName}'");
                             skippedCount++;
                             continue;
                         }
 
-                        if (employee.Id == 0)
+                        // Проверяем, существует ли уже сотрудник с таким ID
+                        var existing = connection.ExecuteScalar<int?>(
+                            "SELECT COUNT(*) FROM ITEmployee WHERE Id = @Id",
+                            new { employee.Id });
+
+                        if (existing > 0)
                         {
-                            employee.Id = nextId++;
+                            Console.WriteLine($"⚠️ Сотрудник с ID {employee.Id} уже существует - пропуск");
+                            skippedCount++;
+                            continue;
                         }
 
-                        var existing = _iTEmployeeRepository.ReadById(employee.Id);
-                        if (existing == null)
-                        {
-                            _iTEmployeeRepository.Add(employee);
-                            Console.WriteLine($"Добавлен: {employee.FullName} (ID: {employee.Id})");
-                            successCount++;
-                        }
-                        else
-                        {
-                            Console.WriteLine($"Сотрудник с ID {employee.Id} уже существует - пропуск");
-                            skippedCount++;
-                        }
+                        // Назначаем случайный LanguageId
+                        var languageId = availableLanguages[random.Next(availableLanguages.Count)].Id;
+
+                        // Вставляем сотрудника через Dapper
+                        connection.Execute(@"
+                            INSERT INTO ITEmployee (Id, FullName, Position, Department, Salary, ExperienceYears, LanguageId)
+                            VALUES (@Id, @FullName, @Position, @Department, @Salary, @ExperienceYears, @LanguageId)",
+                            new
+                            {
+                                employee.Id,
+                                employee.FullName,
+                                Position = employee.Position.ToString(),
+                                Department = employee.Department.ToString(),
+                                employee.Salary,
+                                employee.ExperienceYears,
+                                LanguageId = languageId
+                            });
+
+                        var language = availableLanguages.First(l => l.Id == languageId);
+                        Console.WriteLine($"✅ Добавлен: ID={employee.Id}, Name='{employee.FullName}', Language={language.Name}");
+                        successCount++;
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Ошибка при добавлении {employee.FullName}: {ex.Message}");
+                        Console.WriteLine($"❌ Ошибка при добавлении ID {employee.Id}: {ex.Message}");
+                        if (ex.InnerException != null)
+                            Console.WriteLine($"   Внутренняя ошибка: {ex.InnerException.Message}");
                         skippedCount++;
                     }
                 }
 
-                var allEmployees = _iTEmployeeRepository.ReadAll();
+                // Получаем общее количество сотрудников
+                var totalEmployees = connection.ExecuteScalar<int>("SELECT COUNT(*) FROM ITEmployee");
+
                 Console.WriteLine($"\n=== РЕЗУЛЬТАТ ИМПОРТА ===");
-                Console.WriteLine($"Успешно добавлено: {successCount} сотрудников");
-                Console.WriteLine($"Пропущено: {skippedCount} записей");
-                Console.WriteLine($"Всего в базе: {allEmployees.Count()} сотрудников");
+                Console.WriteLine($"✅ Успешно добавлено: {successCount} сотрудников");
+                Console.WriteLine($"⚠️ Пропущено: {skippedCount} записей");
+                Console.WriteLine($"📊 Всего в базе: {totalEmployees} сотрудников");
 
                 if (successCount > 0)
                 {
-                    Console.WriteLine($"\nДобавленные сотрудники:");
-                    foreach (var emp in allEmployees)
-                    {
-                        Console.WriteLine($"  ID: {emp.Id} | {emp.FullName} | {emp.Position} | {emp.Department}");
-                    }
+                    ShowLanguageStatistics(connection);
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Критическая ошибка: {ex.Message}");
+                Console.WriteLine($"💥 Критическая ошибка: {ex.Message}");
                 if (ex.InnerException != null)
-                    Console.WriteLine($"Внутренняя ошибка: {ex.InnerException.Message}");
-
-                Console.WriteLine("Нажмите любую клавишу для выхода...");
+                    Console.WriteLine($"   Внутренняя ошибка: {ex.InnerException.Message}");
                 Console.ReadKey();
             }
         }
 
-        private static int GetNextAvailableId(string connectionString)
+        private static void CreateTablesIfNotExists(string connectionString)
         {
             try
             {
                 using var connection = new SqlConnection(connectionString);
                 connection.Open();
 
-                var tableExists = connection.ExecuteScalar<int?>(
-                    "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'ITEmployee'");
+                // Удаляем старые таблицы если существуют
+                connection.Execute(@"
+                    IF EXISTS (SELECT * FROM sysobjects WHERE name='ITEmployee' AND xtype='U')
+                        DROP TABLE ITEmployee;
+                    
+                    IF EXISTS (SELECT * FROM sysobjects WHERE name='Languages' AND xtype='U')
+                        DROP TABLE Languages;");
 
-                if (tableExists > 0)
-                {
-                    var maxId = connection.ExecuteScalar<int?>("SELECT MAX(Id) FROM ITEmployee");
-                    return (maxId ?? 0) + 1;
-                }
+                // Таблица Languages
+                var createLanguagesTableSql = @"
+                    CREATE TABLE Languages (
+                        Id INT PRIMARY KEY,
+                        Name NVARCHAR(100) NOT NULL
+                    )";
 
-                return 1; 
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Ошибка при получении следующего ID: {ex.Message}");
-                return 1;
-            }
-        }
+                connection.Execute(createLanguagesTableSql);
+                Console.WriteLine("✅ Таблица Languages создана");
 
-        private static void CreateTableIfNotExists(string connectionString)
-        {
-            try
-            {
-                using var connection = new SqlConnection(connectionString);
-                connection.Open();
-
-                var createTableSql = @"
-                    IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='ITEmployee' AND xtype='U')
+                // Таблица ITEmployee
+                var createEmployeeTableSql = @"
                     CREATE TABLE ITEmployee (
                         Id INT PRIMARY KEY,
                         FullName NVARCHAR(200) NOT NULL,
                         Position NVARCHAR(50) NOT NULL,
                         Department NVARCHAR(50) NOT NULL,
                         Salary DECIMAL(18,2) NOT NULL,
-                        ExperienceYears INT NOT NULL
+                        ExperienceYears INT NOT NULL,
+                        LanguageId INT NOT NULL,
+                        CONSTRAINT FK_ITEmployee_Language FOREIGN KEY (LanguageId) REFERENCES Languages(Id)
                     )";
 
-                connection.Execute(createTableSql);
-                Console.WriteLine("Таблица ITEmployee создана или уже существует");
+                connection.Execute(createEmployeeTableSql);
+                Console.WriteLine("✅ Таблица ITEmployee создана");
+
+                SeedLanguages(connection);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Ошибка при создании таблицы: {ex.Message}");
+                Console.WriteLine($"❌ Ошибка при создании таблиц: {ex.Message}");
                 throw;
+            }
+        }
+
+        private static void SeedLanguages(SqlConnection connection)
+        {
+            var languages = new[]
+            {
+                new { Id = 0, Name = "Unknow"},
+                new { Id = 1, Name = "C#" },
+                new { Id = 2, Name = "Java" },
+                new { Id = 3, Name = "Python" },
+                new { Id = 4, Name = "JavaScript" },
+                new { Id = 5, Name = "TypeScript" },
+                new { Id = 6, Name = "Go" },
+                new { Id = 7, Name = "Rust" },
+                new { Id = 8, Name = "SQL" }
+            };
+
+            foreach (var lang in languages)
+            {
+                connection.Execute("INSERT INTO Languages (Id, Name) VALUES (@Id, @Name)", lang);
+            }
+
+            Console.WriteLine($"✅ Добавлено {languages.Length} языков программирования");
+
+            Console.WriteLine("\n🗣️ Доступные языки:");
+            var existingLanguages = connection.Query<Language>("SELECT * FROM Languages ORDER BY Id");
+            foreach (var lang in existingLanguages)
+            {
+                Console.WriteLine($"  ID: {lang.Id} | {lang.Name}");
+            }
+        }
+
+        private static List<Language> GetLanguages(string connectionString)
+        {
+            using var connection = new SqlConnection(connectionString);
+            connection.Open();
+            return connection.Query<Language>("SELECT * FROM Languages ORDER BY Id").ToList();
+        }
+
+        private static void ShowLanguageStatistics(SqlConnection connection)
+        {
+            var statistics = connection.Query(@"
+                SELECT l.Name as Language, COUNT(e.Id) as EmployeeCount
+                FROM Languages l
+                LEFT JOIN ITEmployee e ON l.Id = e.LanguageId
+                GROUP BY l.Id, l.Name
+                ORDER BY EmployeeCount DESC, l.Name")
+                .ToList();
+
+            Console.WriteLine($"\n=== 📊 СТАТИСТИКА ПО ЯЗЫКАМ ===");
+
+            foreach (var stat in statistics)
+            {
+                Console.WriteLine($"  {stat.Language}: {stat.EmployeeCount} сотрудников");
+            }
+
+            var mostPopular = statistics.OrderByDescending(s => s.EmployeeCount).First();
+            if (mostPopular.EmployeeCount > 0)
+            {
+                Console.WriteLine($"\n🏆 Самый популярный язык: {mostPopular.Language} ({mostPopular.EmployeeCount} сотрудников)");
             }
         }
     }

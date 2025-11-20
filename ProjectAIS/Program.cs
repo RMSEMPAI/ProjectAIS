@@ -19,7 +19,7 @@ namespace ConsoleApp1
 
             do
             {
-                Console.WriteLine("\nВведите команду: \n1.Добавить, \n2.Удалить, \n3.Изменить, \n4.Список, \n5.Отображение по специальностям, \n6.Отображение по отделу\n7.сотрудники на повышение \n8.сохранить и выход");
+                Console.WriteLine("\nВведите команду: \n1.Добавить \n2.Удалить \n3.Изменить \n4.Список \n5.Отображение по специальностям \n6.Отображение по отделу\n7.Сотрудники на повышение \n8.Языки программирование \n9.сохранить и выход");
                 command = Console.ReadLine().ToLower();
 
                 switch (command)
@@ -46,6 +46,9 @@ namespace ConsoleApp1
                         PromoteEmployeeInProgram(logic);
                         break;
                     case "8":
+                        PrintLanguage(logic);
+                        break;
+                    case "9":
                         break;
                 }
             } while (command != "exit");
@@ -59,8 +62,23 @@ namespace ConsoleApp1
         {
             Console.WriteLine();
             foreach (var i in logic.GetAllEmployees())
-                Console.WriteLine($"Id:{i.Id} ФИО:{i.FullName};  Отдел:{i.Department}; Позиция:{i.Position}; Опыт:{i.ExperienceYears} лет; Зарплата:{i.Salary}");
+            {
+                // Проверяем, загружены ли связанные данные (для EF)
+                string languageName = i.Language?.Name ?? "Не указан";
+
+                Console.WriteLine(
+                    $"Id:{i.Id} ФИО:{i.FullName};  Отдел:{i.Department}; " +
+                    $"Позиция:{i.Position}; Опыт:{i.ExperienceYears} лет; " +
+                    $"Зарплата:{i.Salary}; Язык программирования: {languageName}"
+                );
+            }
             Console.WriteLine();
+        }
+        public static void PrintLanguage(Logic logic)
+        {
+            Console.WriteLine();
+            foreach (var i in logic.GetAllLanguages())
+                Console.WriteLine($"Id: {i.Id} Название: {i.Name}");
         }
         /// <summary>
         /// Функция, выдающая список по позициям
@@ -78,7 +96,14 @@ namespace ConsoleApp1
             }
             Console.WriteLine();
             foreach (var i in logic.GetEmployeeByPosition(res))
-                Console.WriteLine($"Id:{i.Id} ФИО:{i.FullName};  Отдел:{i.Department}; Позиция:{i.Position}; Опыт:{i.ExperienceYears} лет; Зарплата:{i.Salary}");
+            {
+                string languageName = i.Language?.Name ?? "Не указан";
+                Console.WriteLine(
+                    $"Id:{i.Id} ФИО:{i.FullName}; Отдел:{i.Department}; " +
+                    $"Позиция:{i.Position}; Опыт:{i.ExperienceYears} лет; " +
+                    $"Зарплата:{i.Salary}; Язык: {languageName}"
+                );
+            }
             Console.WriteLine();
         }
         /// <summary>
@@ -160,8 +185,17 @@ namespace ConsoleApp1
             {
                 Console.WriteLine("Введите опыт работы числом!!!");
             }
+            Console.WriteLine("Введите ID языка программирования:");
+            if (int.TryParse(Console.ReadLine(), out int languageId))
+            {
+                Console.WriteLine("");
+            }
+            else
+            {
+                Console.WriteLine("Введите ID числом!!!");
+            }
             try
-            { logic.AddEmployee(new ITEmployee { FullName = fullname, Position = position1, Department = department1, Salary = salary, ExperienceYears = experienceyears }); }
+            { logic.AddEmployee(new ITEmployee { FullName = fullname, Position = position1, Department = department1, Salary = salary, ExperienceYears = experienceyears, LanguageId = languageId }); }
             catch
             {
                 Console.WriteLine("Ошибка!");
@@ -254,7 +288,14 @@ namespace ConsoleApp1
                 Console.WriteLine("Неверный отдел! Попробуйте снова.");
             }
 
-            var updatedEmployee = new ITEmployee(0, existing.FullName, position, department, salary, experience);
+            Console.Write("Введите ID языка программирования: ");
+            if (!int.TryParse(Console.ReadLine(), out int languageId))
+            {
+                Console.WriteLine("Ошибка ввода ID!");
+                return;
+            }
+
+            var updatedEmployee = new ITEmployee(id, existing.FullName, position, department, salary, experience, languageId);
 
             try
             {
@@ -264,6 +305,7 @@ namespace ConsoleApp1
             catch (Exception ex)
             {
                 Console.WriteLine($"Ошибка при обновлении: {ex.Message}");
+                throw ex;
             }
         }
         /// <summary>

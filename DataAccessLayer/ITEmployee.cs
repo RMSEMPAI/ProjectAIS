@@ -1,4 +1,7 @@
-﻿using LogicLab;
+﻿using DataAccessLayer;
+using LogicLab;
+using System.Text.Json.Serialization;
+using LogicLab;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,29 +10,38 @@ using System.Threading.Tasks;
 
 namespace LogicLib
 {
-    public class ITEmployee : IDomainObject
-    {
-        public int Id { get; set; }
-        public string FullName { get; set; }
-        public Position Position { get; set; }
-        public Department Department { get; set; }
-        public decimal Salary { get; set; }
-        public int ExperienceYears { get; set; }
+    
 
-        public ITEmployee(int id, string fullName, Position position, Department department, decimal salary, int experienceYears)
+        public class ITEmployee : IDomainObject
         {
-            Id = id;
-            FullName = fullName;
-            this.Position = position;
-            this.Department = department;
-            Salary = salary;
-            ExperienceYears = experienceYears;
-        }
-        public ITEmployee()
-        {
+            public int Id { get; set; }
+            public string FullName { get; set; }
+            public Position Position { get; set; }
+            public Department Department { get; set; }
+            public decimal Salary { get; set; }
+            public int ExperienceYears { get; set; }
 
+            // Это свойство не в JSON, поэтому не нужно JsonPropertyName
+            public int LanguageId { get; set; }
+
+            public virtual Language Language { get; set; }
+
+            public ITEmployee() { }
+
+            public ITEmployee(int id, string fullName, Position position, Department department,
+                             decimal salary, int experienceYears, int languageId)
+            {
+                Id = id;
+                FullName = fullName;
+                Position = position;
+                Department = department;
+                Salary = salary;
+                ExperienceYears = experienceYears;
+                LanguageId = languageId;
+            }
         }
-    }
+    
+
     /// <summary>
     /// Отделы
     /// </summary>
