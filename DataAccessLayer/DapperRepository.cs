@@ -9,13 +9,12 @@ namespace LogicLibrary
 {
     public class DapperRepository<T> : IRepository<T> where T : class, IDomainObject, new()
     {
-        private readonly string _connectionString;
+        private readonly string _connectionString= "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\Users\\popov\\OneDrive\\Desktop\\Ваня\\DataAccessLayer\\Database1.mdf;Integrated Security=True";
         private readonly string _tableName;
 
-        public DapperRepository(string tableName, string connectionString)
+        public DapperRepository()
         {
-            _connectionString = connectionString;
-            _tableName = tableName;
+            _tableName = typeof(T).Name;
         }
 
         public void Add(T entity)
@@ -57,34 +56,24 @@ namespace LogicLibrary
             {
                 if (typeof(T) == typeof(ITEmployee))
                 {
-                    // Специальный запрос с JOIN для ITEmployee
-                    const string sql = @"
-                    SELECT e.*, l.Name AS LanguageName 
-                    FROM ITEmployee e
-                    LEFT JOIN Languages l ON e.LanguageId = l.Id";
-
-                    var lookup = new Dictionary<int, ITEmployee>();
-
-                    connection.Query<ITEmployee, Language, ITEmployee>(
-                        sql,
-                        (employee, language) =>
+                    
+                    var employees = connection.Query<ITEmployee, Language, ITEmployee>(
+                        @"SELECT 
+                            e.Id, e.FullName, e.Position, e.Department, e.Salary, e.ExperienceYears, e.LanguageId,
+                            l.Id, l.Name
+                          FROM ITEmployee e
+                          INNER JOIN Languages l ON e.LanguageId = l.Id",
+                        (emp, lang) =>
                         {
-                            if (!lookup.TryGetValue(employee.Id, out var current))
-                            {
-                                current = employee;
-                                current.Language = new Language { Name = language?.Name }; // Заполняем только Name
-                                lookup.Add(current.Id, current);
-                            }
-                            return current;
+                            emp.Language = lang; 
+                            return emp;
                         },
-                        splitOn: "LanguageName"
+                        splitOn: "Id" 
                     );
-
-                    return lookup.Values.Cast<T>();
+                    return employees.Select(x=>(object)x).Select(x=>x as T);
                 }
                 else
                 {
-                    // Стандартный запрос для других сущностей
                     return connection.Query<T>($"SELECT * FROM {_tableName}");
                 }
             }

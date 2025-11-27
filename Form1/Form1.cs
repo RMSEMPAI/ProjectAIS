@@ -1,5 +1,8 @@
+using DataAccessLayer;
 using LogicLib;
+using LogicLibrary;
 using Microsoft.VisualBasic.Logging;
+using Ninject;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -19,26 +22,19 @@ namespace Laba1
     {
         private static List<string> all_positions = Enum.GetNames(typeof(Position)).ToList();
         private static List<string> all_departments = Enum.GetNames(typeof(Department)).ToList();
-        private List<ITEmployee> currentEmployeeList = new List<ITEmployee>();
-        private System.Windows.Forms.Timer timer;
-        private DateTime LastSynchronizationDate;
         private Logic logic;
         public Form1()
         {
             InitializeComponent();
-            logic = new Logic(Logic.SQLProvider.EF);
-
+            //logic = new Logic(new DapperRepository<ITEmployee>(), new DapperRepository<Language>());
+            IKernel ninjectKernel = new StandardKernel(new SimpleConfigModuleDapper());
+            logic = ninjectKernel.Get<Logic>();
             comboBox1.DataSource = all_positions;
             comboBox2.DataSource = all_departments;
             comboBox1.SelectedIndex = 0;
             comboBox2.SelectedIndex = 0;
             checkBox1.Checked = true;
 
-            LastSynchronizationDate = DateTime.Now;
-            ShowData();
-        }
-        private void UpdateData()
-        {
             ShowData();
         }
         public void ShowData()

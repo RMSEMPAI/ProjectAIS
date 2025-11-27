@@ -14,10 +14,14 @@ namespace LogicLibrary
     public class EntityRepository<T> : IRepository<T> where T : class, IDomainObject, new()
     {
         private readonly ITEmployeeContext _context;
+        private string connectionStr = "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\Users\\popov\\OneDrive\\Desktop\\Ваня\\DataAccessLayer\\Database1.mdf;Integrated Security=True";
 
-        public EntityRepository(ITEmployeeContext context)
+        public EntityRepository()
         {
-            _context = context;
+            var optionsBuilder = new DbContextOptionsBuilder<ITEmployeeContext>();
+            optionsBuilder.UseSqlServer(connectionStr);
+            var context = new ITEmployeeContext(optionsBuilder.Options);
+            _context= context;
         }
 
 

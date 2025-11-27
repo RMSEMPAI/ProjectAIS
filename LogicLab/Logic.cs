@@ -18,37 +18,18 @@ namespace LogicLib
     {
         private IRepository<Language> _languageContext;
         private IRepository <ITEmployee> _context;
-        public SQLProvider sQLProvider;
-        private static string connectionStr = "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\Users\\stepa\\source\\repos\\Khomkolova\\ProjectAIS\\DataAccessLayer\\Database1.mdf;Integrated Security=True";
         public int nextId = 0;
 
-        public Logic(SQLProvider sql)
+        public Logic(IRepository<ITEmployee> itEmploeerRepository, IRepository<Language> languageRepository)
         {
-            ChangeSQLProvide(sql);
+            _context = itEmploeerRepository;
+            _languageContext = languageRepository;
         }
         /// <summary>
         /// Метод, читающий даные
         /// </summary>
         /// <param name="s"></param>
         /// <param name="e"></param>
-
-        public void ChangeSQLProvide(SQLProvider sql)
-        {
-            sQLProvider = sql;
-
-            if (sql == SQLProvider.EF)
-            {
-                var optionsBuilder = new DbContextOptionsBuilder<ITEmployeeContext>();
-                optionsBuilder.UseSqlServer(connectionStr);
-                var context = new ITEmployeeContext(optionsBuilder.Options);
-
-                _context = new EntityRepository<ITEmployee>(context);
-                _languageContext = new EntityRepository<Language>(context); // Новый репозиторий
-            }
-            else
-                _context = new DapperRepository<ITEmployee>("ITEmployee", connectionStr);
-            _languageContext = new DapperRepository<Language>("Languages", connectionStr); // Новый репозиторий
-        }
 
         /// <summary>
         /// Метод для получения сотрудников по отделу
@@ -133,8 +114,7 @@ namespace LogicLib
         /// <returns></returns>
         public List<ITEmployee> GetAllEmployees(bool sort = false)
         {
-            var employees = _context.ReadAll(); // Для EF здесь уже будет загружен Language
-
+            var employees = _context.ReadAll();
             if (sort)
                 return employees.OrderBy(x => x.Department).ToList();
 
