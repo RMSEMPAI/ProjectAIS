@@ -42,12 +42,6 @@ namespace DataAccessLayer
                 .Property(e => e.ExperienceYears)
                 .IsRequired();
 
-            //modelBuilder.Entity<ITEmployee>()
-            //    .HasOne(e => e.Language)           // У сотрудника один язык
-            //    .WithMany(l => l.Employees)        // У языка много сотрудников
-            //    .HasForeignKey(e => e.LanguageId)  // Внешний ключ
-            //    .OnDelete(DeleteBehavior.Restrict); // Запрещаем удаление языка если есть сотрудники
-
             // Конфигурация для Language
             modelBuilder.Entity<Language>()
                 .ToTable("Languages")

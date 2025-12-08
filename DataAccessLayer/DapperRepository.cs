@@ -9,12 +9,13 @@ namespace LogicLibrary
 {
     public class DapperRepository<T> : IRepository<T> where T : class, IDomainObject, new()
     {
-        private readonly string _connectionString= "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\Users\\popov\\OneDrive\\Desktop\\Ваня\\DataAccessLayer\\Database1.mdf;Integrated Security=True";
+        private readonly string _connectionString;
         private readonly string _tableName;
 
-        public DapperRepository()
+        public DapperRepository(string connectionStr)
         {
             _tableName = typeof(T).Name;
+            this._connectionString = connectionStr;
         }
 
         public void Add(T entity)

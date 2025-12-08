@@ -14,14 +14,15 @@ namespace LogicLibrary
     public class EntityRepository<T> : IRepository<T> where T : class, IDomainObject, new()
     {
         private readonly ITEmployeeContext _context;
-        private string connectionStr = "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\Users\\popov\\OneDrive\\Desktop\\Ваня\\DataAccessLayer\\Database1.mdf;Integrated Security=True";
+        private string connectionStr;
 
-        public EntityRepository()
+        public EntityRepository(string connectionStr)
         {
             var optionsBuilder = new DbContextOptionsBuilder<ITEmployeeContext>();
             optionsBuilder.UseSqlServer(connectionStr);
             var context = new ITEmployeeContext(optionsBuilder.Options);
             _context= context;
+            this.connectionStr = connectionStr;
         }
 
 
@@ -48,7 +49,6 @@ namespace LogicLibrary
         {
             var query = _context.Set<T>().AsQueryable();
 
-            // Автоматически включаем Language для ITEmployee
             if (typeof(T) == typeof(ITEmployee))
             {
                 query = query.Include(e => (e as ITEmployee).Language);

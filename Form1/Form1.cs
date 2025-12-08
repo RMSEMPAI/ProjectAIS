@@ -27,7 +27,7 @@ namespace Laba1
         {
             InitializeComponent();
             //logic = new Logic(new DapperRepository<ITEmployee>(), new DapperRepository<Language>());
-            IKernel ninjectKernel = new StandardKernel(new SimpleConfigModuleDapper());
+            IKernel ninjectKernel = new StandardKernel(new SimpleConfigModule());
             logic = ninjectKernel.Get<Logic>();
             comboBox1.DataSource = all_positions;
             comboBox2.DataSource = all_departments;

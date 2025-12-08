@@ -1,9 +1,10 @@
-﻿using System;
+﻿using LogicLib;
+using Ninject;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using LogicLib;
 
 namespace ConsoleApp1
 {
@@ -13,7 +14,8 @@ namespace ConsoleApp1
         private static List<string> all_departments = Enum.GetNames(typeof(Department)).ToList();
         static void Main(string[] args)
         {
-            Logic logic = new Logic(Logic.SQLProvider.EF);
+            IKernel ninjectKernel = new StandardKernel(new SimpleConfigModule());
+            var logic = ninjectKernel.Get<Logic>();
 
             string command;
 
