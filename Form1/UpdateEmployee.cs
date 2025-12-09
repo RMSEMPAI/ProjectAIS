@@ -77,7 +77,7 @@ namespace Laba1
             var employee = new ITEmployee { FullName = fio, Position = pos, Department = depart, Salary = salary, ExperienceYears = exp };
             if (id != null)
                 employee.Id = (int)id;
-            action(employee, languagesProgramm);
+            action?.Invoke(employee, languagesProgramm);
             this.Close();
         }
 

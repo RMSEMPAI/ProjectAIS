@@ -3,6 +3,7 @@ using LogicLib;
 using LogicLibrary;
 using Microsoft.VisualBasic.Logging;
 using Ninject;
+using Shared;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -18,17 +19,25 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement.Button;
 
 namespace Laba1
 {
-    public partial class Form1 : Form
+    public partial class Form1 : Form, IEmployeeView
     {
         private static List<string> all_positions = Enum.GetNames(typeof(Position)).ToList();
         private static List<string> all_departments = Enum.GetNames(typeof(Department)).ToList();
-        private Logic logic;
+        //private Logic logic;
+        private UpdateEmployee updateEmployee;
+        
+
+        public event Action<DataRequest> RequestDataEmployees;
+        public event Action<ITEmployee, string> SafeEmployee;
+        public event Action<ITEmployee, string> OnUpdateEmployee;
+        public event Action<int> GetEmployeeByID;
+        public event Action<int> DeleteEmployeeByID;
+        public event Action<int> PromoteEmployeeBasedOnExperience;
+
         public Form1()
         {
             InitializeComponent();
             //logic = new Logic(new DapperRepository<ITEmployee>(), new DapperRepository<Language>());
-            IKernel ninjectKernel = new StandardKernel(new SimpleConfigModule());
-            logic = ninjectKernel.Get<Logic>();
             comboBox1.DataSource = all_positions;
             comboBox2.DataSource = all_departments;
             comboBox1.SelectedIndex = 0;
@@ -39,24 +48,24 @@ namespace Laba1
         }
         public void ShowData()
         {
-            var list = new List<ITEmployee>();
-            if (checkBox1.Checked)
-                list = logic.GetAllEmployees();
-            else if (checkBox2.Checked)
-                list = logic.GetEmployeeByPosition((Position)comboBox1.SelectedIndex);
-            else if (checkBox3.Checked)
-                list = logic.GetEmployeeByDepartment((Department)comboBox2.SelectedIndex);
-            else if (checkBox4.Checked)
-                list = logic.GetPromoteEmployees();
-
-            var lObj = new List<object>();
-
-            foreach (var i in list)
+            //var list = new List<ITEmployee>();
+            //if (checkBox1.Checked)
+            //    list = logic.GetAllEmployees();
+            //else if (checkBox2.Checked)
+            //    list = logic.GetEmployeeByPosition((Position)comboBox1.SelectedIndex);
+            //else if (checkBox3.Checked)
+            //    list = logic.GetEmployeeByDepartment((Department)comboBox2.SelectedIndex);
+            //else if (checkBox4.Checked)
+            //    list = logic.GetPromoteEmployees();
+            DataRequest dataRequest = new DataRequest()
             {
-                lObj.Add(new { ID = i.Id, FullName = i.FullName, Position = i.Position, Department = i.Department, Salary = i.Salary, ExperienceYears = i.ExperienceYears, Language = i.Language.Name });
-            }
-
-            dataGridView1.DataSource = lObj;
+                IsPosition = checkBox2.Checked,
+                IsDepartment = checkBox3.Checked,
+                Promote = checkBox4.Checked,
+                position = (Position)comboBox1.SelectedIndex,
+                department = (Department)comboBox2.SelectedIndex,
+            };
+            RequestDataEmployees?.Invoke(dataRequest);
         }
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
@@ -113,7 +122,7 @@ namespace Laba1
 
         private void add_btn_Click(object sender, EventArgs e)
         {
-            var form = new UpdateEmployee(EventForm.AddOrUpdate, logic.AddEmployee, all_positions, all_departments);
+            var form = new UpdateEmployee(EventForm.AddOrUpdate, SafeEmployee, all_positions, all_departments);
             form.ShowDialog();
             ShowData();
         }
@@ -126,11 +135,11 @@ namespace Laba1
                 return;
             }
             Action<ITEmployee,string> update = (ITEmployee e,string s) => {
-                logic.UpdateEmployee(e,s);
+                OnUpdateEmployee?.Invoke(e,s);
             };
-            var form = new UpdateEmployee(EventForm.AddOrUpdate, update, all_positions, all_departments);
-            form.SetEmployee(logic.GetEmployeeById((int)dataGridView1.SelectedRows[0].Cells[0].Value));
-            form.ShowDialog();
+            updateEmployee = new UpdateEmployee(EventForm.AddOrUpdate, update, all_positions, all_departments);
+            GetEmployeeByID?.Invoke((int)dataGridView1.SelectedRows[0].Cells[0].Value);
+            updateEmployee.ShowDialog();
             ShowData();
         }
 
@@ -149,7 +158,7 @@ namespace Laba1
             {
                 DataGridViewRow row = (DataGridViewRow)i;
                 int id = (int)row.Cells[0].Value;
-                logic.DeleteEmployee(id);
+                DeleteEmployeeByID?.Invoke(id);
             }
             ShowData();
         }
@@ -162,11 +171,11 @@ namespace Laba1
                 return;
             }
             Action<ITEmployee,string> update = (ITEmployee e, string s) => {
-                logic.UpdateEmployee(e);
+                OnUpdateEmployee?.Invoke(e, s);
             };
-            var form = new UpdateEmployee(EventForm.ShiftDepartment, update, all_positions, all_departments);
-            form.SetEmployee(logic.GetEmployeeById((int)dataGridView1.SelectedRows[0].Cells[0].Value));
-            form.ShowDialog();
+            updateEmployee = new UpdateEmployee(EventForm.ShiftDepartment, update, all_positions, all_departments);
+            GetEmployeeByID((int)dataGridView1.SelectedRows[0].Cells[0].Value);
+            updateEmployee.ShowDialog();
             ShowData();
         }
 
@@ -178,7 +187,7 @@ namespace Laba1
             {
                 DataGridViewRow row = (DataGridViewRow)i;
                 int id = (int)row.Cells[0].Value;
-                logic.PromoteEmployeeBasedOnExperience(id);
+                PromoteEmployeeBasedOnExperience?.Invoke(id);
             }
             ShowData();
         }
@@ -186,6 +195,36 @@ namespace Laba1
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
             
+        }
+
+        public void SetDataEmployees(List<ITEmployee> iTEmployees)
+        {
+            var lObj = new List<object>();
+
+            foreach (var i in iTEmployees)
+            {
+                lObj.Add(new { ID = i.Id, FullName = i.FullName, Position = i.Position, Department = i.Department, Salary = i.Salary, ExperienceYears = i.ExperienceYears, Language = i.Language.Name });
+            }
+
+            dataGridView1.DataSource = lObj;
+        }
+
+        public void ShowView()
+        {
+            Application.Run(this);
+        }
+
+        public void CloseView()
+        {
+            this.Close();
+        }
+
+        public void SetEmployee(ITEmployee iTEmployee)
+        {
+            if (updateEmployee != null)
+            {
+                updateEmployee.SetEmployee(iTEmployee);
+            }
         }
     }
 }

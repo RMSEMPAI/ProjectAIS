@@ -9,10 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Ninject" Version="4.0.0-beta.1" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <ProjectReference Include="..\DataAccessLayer\DataAccessLayer.csproj" />
+    <ProjectReference Include="..\Form1\WindowsForm.csproj" />
     <ProjectReference Include="..\LogicLab\LogicLab.csproj" />
     <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>

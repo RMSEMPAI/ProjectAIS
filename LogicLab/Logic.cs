@@ -11,10 +11,11 @@ using System.Numerics;
 using System.Text;
 using System.Text.Json;
 using System.Xml.Linq;
+using Shared;
 
 namespace LogicLib
 {
-    public class Logic
+    public class Logic: IEmployeeModel
     {
         private IRepository<Language> _languageContext;
         private IRepository <ITEmployee> _context;
@@ -216,6 +217,7 @@ namespace LogicLib
                 
                 employee.Salary *= 1.10m; 
             }
+            UpdateEmployee(employee);
             _context.SaveChanges();
         }
 

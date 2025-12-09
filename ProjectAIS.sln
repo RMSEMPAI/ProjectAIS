@@ -11,6 +11,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogicLab", "LogicLab\LogicL
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccessLayer", "DataAccessLayer\DataAccessLayer.csproj", "{8F3C8FC5-93A4-4E09-8851-15422B9A065F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared", "Shared\Shared.csproj", "{DC71989F-35C1-4275-B077-0D8B540D6605}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Presenter", "Presenter\Presenter.csproj", "{4FA10012-7248-45C3-BA2E-41E394454572}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +37,14 @@ Global
 		{8F3C8FC5-93A4-4E09-8851-15422B9A065F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8F3C8FC5-93A4-4E09-8851-15422B9A065F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8F3C8FC5-93A4-4E09-8851-15422B9A065F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DC71989F-35C1-4275-B077-0D8B540D6605}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DC71989F-35C1-4275-B077-0D8B540D6605}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DC71989F-35C1-4275-B077-0D8B540D6605}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DC71989F-35C1-4275-B077-0D8B540D6605}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4FA10012-7248-45C3-BA2E-41E394454572}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4FA10012-7248-45C3-BA2E-41E394454572}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4FA10012-7248-45C3-BA2E-41E394454572}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4FA10012-7248-45C3-BA2E-41E394454572}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
