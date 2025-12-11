@@ -21,7 +21,6 @@ namespace LogicLib
             public decimal Salary { get; set; }
             public int ExperienceYears { get; set; }
 
-            // Это свойство не в JSON, поэтому не нужно JsonPropertyName
             public int LanguageId { get; set; }
 
             public virtual Language Language { get; set; }

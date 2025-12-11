@@ -23,7 +23,6 @@ namespace Laba1
     {
         private static List<string> all_positions = Enum.GetNames(typeof(Position)).ToList();
         private static List<string> all_departments = Enum.GetNames(typeof(Department)).ToList();
-        //private Logic logic;
         private UpdateEmployee updateEmployee;
         
 
@@ -37,26 +36,15 @@ namespace Laba1
         public Form1()
         {
             InitializeComponent();
-            //logic = new Logic(new DapperRepository<ITEmployee>(), new DapperRepository<Language>());
             comboBox1.DataSource = all_positions;
             comboBox2.DataSource = all_departments;
             comboBox1.SelectedIndex = 0;
             comboBox2.SelectedIndex = 0;
-            checkBox1.Checked = true;
-
+            checkBox1.Checked = false;
             ShowData();
         }
         public void ShowData()
         {
-            //var list = new List<ITEmployee>();
-            //if (checkBox1.Checked)
-            //    list = logic.GetAllEmployees();
-            //else if (checkBox2.Checked)
-            //    list = logic.GetEmployeeByPosition((Position)comboBox1.SelectedIndex);
-            //else if (checkBox3.Checked)
-            //    list = logic.GetEmployeeByDepartment((Department)comboBox2.SelectedIndex);
-            //else if (checkBox4.Checked)
-            //    list = logic.GetPromoteEmployees();
             DataRequest dataRequest = new DataRequest()
             {
                 IsPosition = checkBox2.Checked,
