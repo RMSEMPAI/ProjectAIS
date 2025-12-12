@@ -20,12 +20,17 @@ namespace Presenter
         {
             this.model = model;
             this.view = view;
-            view.RequestDataEmployees += GetDataEmployee;
-            view.OnUpdateEmployee += model.UpdateEmployee;
-            view.SafeEmployee += model.AddEmployee;
-            view.DeleteEmployeeByID += model.DeleteEmployee;
-            view.PromoteEmployeeBasedOnExperience += model.PromoteEmployeeBasedOnExperience;
-            view.GetEmployeeByID += GetEmployeeByID;
+            view.OnUpdateEmployee = model.UpdateEmployee;
+            view.SafeEmployee = model.AddEmployee;
+            view.DeleteEmployeeByID = model.DeleteEmployee;
+            view.PromoteEmployeeBasedOnExperience = model.PromoteEmployeeBasedOnExperience;
+            view.GetEmployeeById = model.GetEmployeeById;
+            view.GetAllEmployees = model.GetAllEmployees;
+            view.GetEmployeeByPosition = model.GetEmployeeByPosition;
+            view.GetEmployeeByDepartment = model.GetEmployeeByDepartment;
+            view.GetPromoteEmployee = model.GetPromoteEmployees;
+
+            
 
 
         }
@@ -37,30 +42,7 @@ namespace Presenter
         {
             view.CloseView();
         }
-        public void GetEmployeeByID(int id)
-        {
-            view.SetEmployee(model.GetEmployeeById(id));
-        }
-        public void GetDataEmployee(DataRequest request)
-        {
-            var list = new List<ITEmployee>();
-            if (request.IsPosition)
-            {
-                list = model.GetEmployeeByPosition(request.position);
-            }
-            else if (request.IsDepartment)
-            {
-                list = model.GetEmployeeByDepartment(request.department);
-            }
-            else if (request.Promote)
-            {
-                list = model.GetPromoteEmployees();
-            }
-            else
-            {
-                list = model.GetAllEmployees();
-            }
-            view.SetDataEmployees(list);
-        }
+        
+        
     }
 }

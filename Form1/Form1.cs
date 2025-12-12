@@ -24,14 +24,16 @@ namespace Laba1
         private static List<string> all_positions = Enum.GetNames(typeof(Position)).ToList();
         private static List<string> all_departments = Enum.GetNames(typeof(Department)).ToList();
         private UpdateEmployee updateEmployee;
-        
 
-        public event Action<DataRequest> RequestDataEmployees;
-        public event Action<ITEmployee, string> SafeEmployee;
-        public event Action<ITEmployee, string> OnUpdateEmployee;
-        public event Action<int> GetEmployeeByID;
-        public event Action<int> DeleteEmployeeByID;
-        public event Action<int> PromoteEmployeeBasedOnExperience;
+        public Func<bool,List<ITEmployee>> GetAllEmployees {  get; set; }
+        public Func<Department,List<ITEmployee>> GetEmployeeByDepartment { get; set; }
+        public Func<Position, List<ITEmployee>> GetEmployeeByPosition { get; set; }
+        public Func<List<ITEmployee>> GetPromoteEmployee { get; set; }
+        public Action<ITEmployee, string> SafeEmployee {  get; set; }
+        public Action<ITEmployee, string> OnUpdateEmployee { get; set; }
+        public Func<int, ITEmployee> GetEmployeeById { get; set; }
+        public Action<int> DeleteEmployeeByID { get; set; }
+        public Action<int> PromoteEmployeeBasedOnExperience { get; set; }
 
         public Form1()
         {
@@ -45,15 +47,25 @@ namespace Laba1
         }
         public void ShowData()
         {
-            DataRequest dataRequest = new DataRequest()
+            var list = new List<ITEmployee>();
+            if (checkBox2.Checked)
             {
-                IsPosition = checkBox2.Checked,
-                IsDepartment = checkBox3.Checked,
-                Promote = checkBox4.Checked,
-                position = (Position)comboBox1.SelectedIndex,
-                department = (Department)comboBox2.SelectedIndex,
-            };
-            RequestDataEmployees?.Invoke(dataRequest);
+                list = GetEmployeeByPosition?.Invoke((Position)comboBox1.SelectedIndex);
+            }
+            else if (checkBox3.Checked)
+            {
+                list = GetEmployeeByDepartment?.Invoke((Department)comboBox2.SelectedIndex);
+            }
+            else if (checkBox4.Checked)
+
+            {
+                list = GetPromoteEmployee?.Invoke();
+            }
+            else
+            {
+                list = GetAllEmployees?.Invoke(false);
+            }
+            SetDataEmployees((List<ITEmployee>)list);
         }
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
@@ -126,7 +138,8 @@ namespace Laba1
                 OnUpdateEmployee?.Invoke(e,s);
             };
             updateEmployee = new UpdateEmployee(EventForm.AddOrUpdate, update, all_positions, all_departments);
-            GetEmployeeByID?.Invoke((int)dataGridView1.SelectedRows[0].Cells[0].Value);
+            var employee = GetEmployeeById?.Invoke((int)dataGridView1.SelectedRows[0].Cells[0].Value);
+            SetEmployee(employee);
             updateEmployee.ShowDialog();
             ShowData();
         }
@@ -162,7 +175,8 @@ namespace Laba1
                 OnUpdateEmployee?.Invoke(e, s);
             };
             updateEmployee = new UpdateEmployee(EventForm.ShiftDepartment, update, all_positions, all_departments);
-            GetEmployeeByID((int)dataGridView1.SelectedRows[0].Cells[0].Value);
+            var employee = GetEmployeeById((int)dataGridView1.SelectedRows[0].Cells[0].Value);
+            SetEmployee(employee);
             updateEmployee.ShowDialog();
             ShowData();
         }
@@ -189,9 +203,21 @@ namespace Laba1
         {
             var lObj = new List<object>();
 
-            foreach (var i in iTEmployees)
+            if (iTEmployees != null)
             {
-                lObj.Add(new { ID = i.Id, FullName = i.FullName, Position = i.Position, Department = i.Department, Salary = i.Salary, ExperienceYears = i.ExperienceYears, Language = i.Language.Name });
+                foreach (var i in iTEmployees)
+                {
+                    lObj.Add(new
+                    {
+                        ID = i.Id,
+                        FullName = i.FullName,
+                        Position = i.Position,
+                        Department = i.Department,
+                        Salary = i.Salary,
+                        ExperienceYears = i.ExperienceYears,
+                        Language = i.Language.Name
+                    });
+                }
             }
 
             dataGridView1.DataSource = lObj;
