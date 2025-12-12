@@ -14,7 +14,7 @@ namespace LogicLib
 
         public override void Load()
         {
-            string cs = "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\Users\\stepa\\source\\repos\\Khomkolova\\ProjectAIS\\DataAccessLayer\\Database1.mdf;Integrated Security=True";
+            string cs = "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\Users\\stepa\\source\\repos\\Khomkolova\\ProjectAIS\\ProjectAIS\\DataAccessLayer\\Database1.mdf;Integrated Security=True";
             Bind<IRepository<ITEmployee>>().To<EntityRepository<ITEmployee>>().InSingletonScope().WithConstructorArgument("connectionStr", cs);
             Bind<IRepository<Language>>().To<EntityRepository<Language>>().InSingletonScope().WithConstructorArgument("connectionStr", cs);
         }
@@ -23,7 +23,7 @@ namespace LogicLib
     {
         public override void Load()
         {
-            string cs = "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\Users\\stepa\\source\\repos\\Khomkolova\\ProjectAIS\\DataAccessLayer\\Database1.mdf;Integrated Security=True";
+            string cs = "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\Users\\stepa\\source\\repos\\Khomkolova\\ProjectAIS\\ProjectAIS\\DataAccessLayer\\Database1.mdf;Integrated Security=True";
             Bind<IRepository<ITEmployee>>().To<DapperRepository<ITEmployee>>().InSingletonScope().WithConstructorArgument("connectionStr", cs);
             Bind<IRepository<Language>>().To<DapperRepository<Language>>().InSingletonScope().WithConstructorArgument("connectionStr", cs);
         }
