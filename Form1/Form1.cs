@@ -124,7 +124,6 @@ namespace Laba1
         {
             var form = new UpdateEmployee(EventForm.AddOrUpdate, SafeEmployee, all_positions, all_departments);
             form.ShowDialog();
-            ShowData();
         }
 
         private void update_btn_Click(object sender, EventArgs e)
@@ -141,7 +140,6 @@ namespace Laba1
             var employee = GetEmployeeById?.Invoke((int)dataGridView1.SelectedRows[0].Cells[0].Value);
             SetEmployee(employee);
             updateEmployee.ShowDialog();
-            ShowData();
         }
 
         private void delete_btn_Click(object sender, EventArgs e)
@@ -161,7 +159,6 @@ namespace Laba1
                 int id = (int)row.Cells[0].Value;
                 DeleteEmployeeByID?.Invoke(id);
             }
-            ShowData();
         }
 
         private void shift_btn_Click(object sender, EventArgs e)
@@ -178,7 +175,6 @@ namespace Laba1
             var employee = GetEmployeeById((int)dataGridView1.SelectedRows[0].Cells[0].Value);
             SetEmployee(employee);
             updateEmployee.ShowDialog();
-            ShowData();
         }
 
         private void up_btn_Click(object sender, EventArgs e)
@@ -191,7 +187,6 @@ namespace Laba1
                 int id = (int)row.Cells[0].Value;
                 PromoteEmployeeBasedOnExperience?.Invoke(id);
             }
-            ShowData();
         }
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
@@ -239,6 +234,12 @@ namespace Laba1
             {
                 updateEmployee.SetEmployee(iTEmployee);
             }
+        }
+        
+
+        public void updateDataModel()
+        {
+            ShowData();
         }
     }
 }

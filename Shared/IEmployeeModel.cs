@@ -24,6 +24,7 @@ namespace Shared
         public void PromoteEmployeeBasedOnExperience(ITEmployee employee);
         public ITEmployee GetEmployeeById(int id);
         public List<Language> GetAllLanguages();
+        public event Action UpdateData;
 
     }
 }

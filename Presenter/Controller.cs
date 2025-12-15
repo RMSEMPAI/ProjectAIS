@@ -9,14 +9,14 @@ using System.Threading.Tasks;
 
 namespace Presenter
 {
-    public class PresenterEmployee
+    public class Controller
     {
         private IEmployeeModel model;
         private IEmployeeView view;
         
 
 
-        public PresenterEmployee(IEmployeeModel model, IEmployeeView view)
+        public Controller(IEmployeeModel model, IEmployeeView view)
         {
             this.model = model;
             this.view = view;
@@ -29,6 +29,7 @@ namespace Presenter
             view.GetEmployeeByPosition = model.GetEmployeeByPosition;
             view.GetEmployeeByDepartment = model.GetEmployeeByDepartment;
             view.GetPromoteEmployee = model.GetPromoteEmployees;
+            model.UpdateData += view.updateDataModel;
 
             
 

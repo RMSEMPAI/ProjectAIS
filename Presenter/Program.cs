@@ -18,7 +18,7 @@ namespace Presenter
         {
             
             IKernel kernel = new StandardKernel(new SimpleConfigPresenter());
-            var presenter = kernel.Get<PresenterEmployee>();
+            var presenter = kernel.Get<Controller>();
             if (presenter != null)
             {
                 presenter.Run();

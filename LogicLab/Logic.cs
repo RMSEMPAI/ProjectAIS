@@ -17,6 +17,7 @@ namespace LogicLib
 {
     public class Logic: IEmployeeModel
     {
+        public event Action UpdateData;
         private IRepository<Language> _languageContext;
         private IRepository <ITEmployee> _context;
         public int nextId = 0;
@@ -74,6 +75,7 @@ namespace LogicLib
             }
 
             _context.Add(employee);
+            UpdateData?.Invoke();
         }
         /// <summary>
         /// Метод для удаления сотрудника
@@ -82,6 +84,7 @@ namespace LogicLib
         public void DeleteEmployee(int id)
         {
             _context.Delete(id);
+            UpdateData?.Invoke();
         }
 
         /// <summary>
@@ -92,6 +95,7 @@ namespace LogicLib
         public void UpdateEmployee(ITEmployee iTEmployee)
         {
             _context.Update(iTEmployee);
+            UpdateData?.Invoke();
         }
         public void UpdateEmployee(ITEmployee employee, string languages)
         {
@@ -108,6 +112,7 @@ namespace LogicLib
             }
 
             _context.Update(employee);
+            UpdateData?.Invoke();
         }
         /// <summary>
         /// Метод, возвращающий всех сотрудников
@@ -149,9 +154,11 @@ namespace LogicLib
                 };
 
                 _context.Update(updatedEmployee);
+                UpdateData?.Invoke();
                 return true;
             }
             return false;
+            
         }
         /// <summary>
         /// Метод проверки пригодности на повышение
@@ -238,7 +245,6 @@ namespace LogicLib
             Dapper
         }
 
-        // Новые методы для работы с языками
         public List<Language> GetAllLanguages()
         {
             return _languageContext.ReadAll().ToList();

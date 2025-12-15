@@ -12,12 +12,15 @@ namespace Shared
         public Func<bool,List<ITEmployee>> GetAllEmployees { get; set; }
         public Func<Department, List<ITEmployee>> GetEmployeeByDepartment {  get; set; }
         public Func<Position, List<ITEmployee>> GetEmployeeByPosition { get; set; }
+        Func<int, ITEmployee> GetEmployeeById { get; set; }
         public Func<List<ITEmployee>> GetPromoteEmployee { get; set; }
         Action<ITEmployee, string> SafeEmployee { get; set; }
         Action<ITEmployee, string> OnUpdateEmployee { get; set; }
         Action<int> DeleteEmployeeByID { get; set; }
         Action<int> PromoteEmployeeBasedOnExperience { get; set; }
-        Func<int,ITEmployee> GetEmployeeById { get; set; }
+        void updateDataModel();
+
+
 
     }
 }
