@@ -12,7 +12,7 @@ using Laba1;
 
 namespace Presenter
 {
-    internal class SimpleConfigPresenter: NinjectModule
+    public class SimpleConfigPresenter: NinjectModule
     {
         public override void Load()
         {

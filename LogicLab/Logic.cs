@@ -62,7 +62,6 @@ namespace LogicLib
         {
             var language = _languageContext.ReadAll().Where(x => x.Name ==languages).FirstOrDefault();
 
-            
 
             if (language == null)
             {

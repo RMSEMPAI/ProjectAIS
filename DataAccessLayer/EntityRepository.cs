@@ -54,7 +54,7 @@ namespace LogicLibrary
                 query = query.Include(e => (e as ITEmployee).Language);
             }
 
-            return query.AsNoTracking().ToList();
+            return query.ToList();
         }
 
 
@@ -68,7 +68,7 @@ namespace LogicLibrary
                 query = query.Include(e => (e as ITEmployee).Language);
             }
 
-            return query.AsNoTracking().FirstOrDefault(e => e.Id == id);
+            return query.FirstOrDefault(e => e.Id == id);
         }
 
         public void Update(T entity)

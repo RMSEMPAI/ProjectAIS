@@ -5,6 +5,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 using DataAccessLayer;
 using Laba1;
 using Ninject;
+using WpfApp1;
 
 namespace Presenter
 {
@@ -16,12 +17,20 @@ namespace Presenter
         [STAThread]
         static void Main()
         {
-            
-            IKernel kernel = new StandardKernel(new SimpleConfigPresenter());
-            var presenter = kernel.Get<Controller>();
-            if (presenter != null)
+
+            var vmManager = new ViewModelManager(new StandardKernel(new SimpleConfigViewModel()));
+            var viewManager = new ViewManager(vmManager, new StandardKernel(new SimpleConfigView()));
+
+            vmManager.RegisterTo<ViewModelMain, MainWindow>();
+
+            var vm = vmManager.Create<ViewModelMain>();
+
+            var window = viewManager.ShowView(vm);
+            var app = new System.Windows.Application();
+
+            if (window != null)
             {
-                presenter.Run();
+                app.Run(window);
             }
         }
     }
