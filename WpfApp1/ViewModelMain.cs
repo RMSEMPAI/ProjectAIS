@@ -1,6 +1,7 @@
 ﻿using LogicLib;
 using Shared;
 using System;
+using Newtonsoft;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -8,6 +9,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 
@@ -25,10 +27,11 @@ namespace WpfApp1
         public ViewModelMain(IEmployeeModel model)
         {
             this.model = model;
-            commandAdd = new RelayCommand(Add);
-            commandDelete = new RelayCommand(Delete);
-            commandPromote = new RelayCommand(OkPromote);
-            commandUpdate = new RelayCommand(UpdateEmployee);
+            commandAdd = new RelayCommand(Add, CheckAdd);
+            commandDelete = new RelayCommand(Delete,CheckSelectedNull);
+            commandPromote = new RelayCommand(OkPromote,CheckPromote);
+            commandUpdate = new RelayCommand(UpdateEmployee,CheckUpdate);
+            commandImport = new RelayCommand(CreateImport, null);
             UpdateListEmployees();
         }
         
@@ -86,6 +89,9 @@ namespace WpfApp1
 
         public int PositionChoose { get => positionChoose; set {
                 positionChoose = value;
+                showAll = false;
+                showOnPosition = true;
+                showOnDepartment = false;
                 UpdateListEmployees();
                 OnPropertyChanged("PositionChoose");
             } }
@@ -93,43 +99,70 @@ namespace WpfApp1
 
         public int DepartmentChoose { get => departmentChoose; set {
                 departmentChoose = value;
+                showOnDepartment = true;
+                showAll = false;
+                showOnPosition= false;
                 UpdateListEmployees();
                 OnPropertyChanged("DepartmentChoose");
             } }
         private int departmentChoose;
 
+        public int PositionFilter { get => positionFilter; set {
+                positionFilter = value;
+                OnPropertyChanged("PositionFilter");
+            } }
+        private int positionFilter;
+
+        public int DepartmentFilter { get => departmentFilter; set {
+                departmentFilter = value;
+                OnPropertyChanged("DepartmentFilter");
+            } }
+        private int departmentFilter;
+
         public string Name { get => name; set {
                 name = value;
+                commandAdd.RaiseCanExecuteChanged();
+                commandUpdate.RaiseCanExecuteChanged();
                 OnPropertyChanged("Name");
             } }
         private string name;
 
         public int PositionEmployee { get => positionEmployee; set {
                 positionEmployee = value;
+                commandAdd.RaiseCanExecuteChanged();
+                commandUpdate.RaiseCanExecuteChanged();
                 OnPropertyChanged("PositionEmployee");
             } }
         private int positionEmployee;
 
         public int DepartmentEmployee { get => departmentEmployee; set {
                 departmentEmployee = value;
+                commandAdd.RaiseCanExecuteChanged();
+                commandUpdate.RaiseCanExecuteChanged();
                 OnPropertyChanged("DepartmentEmployee");
             } }
         private int departmentEmployee;
 
         public int Salary { get => salary; set {
                 salary = value;
+                commandAdd.RaiseCanExecuteChanged();
+                commandUpdate.RaiseCanExecuteChanged();
                 OnPropertyChanged("Salary");
             } }
         private int salary;
 
         public int Expirience {  get => expirience; set {
                 expirience = value;
+                commandAdd.RaiseCanExecuteChanged();
+                commandUpdate.RaiseCanExecuteChanged();
                 OnPropertyChanged("Expirience");
             } }
         private int expirience;
 
         public string Language { get => language; set {
                 language = value;
+                commandAdd.RaiseCanExecuteChanged();
+                commandUpdate.RaiseCanExecuteChanged();
                 OnPropertyChanged("Language");
             } }
         private string language = "Unknow";
@@ -160,7 +193,7 @@ namespace WpfApp1
             }
         }
 
-        public RelayCommand commandAdd { get; set; }
+        public RelayCommand commandAdd { get; private set; }
         public void Add()
         {
             if (CheckAdd())model.AddEmployee(new ITEmployee { FullName = Name, Position = (Position)PositionEmployee, Department = (Department)DepartmentEmployee, Salary = salary, ExperienceYears = Expirience },Language.Replace("System.Windows.Controls.ComboBoxItem: ",""));
@@ -171,11 +204,15 @@ namespace WpfApp1
         public ITEmployee SelectedEmployee { get => selectedEmployee; set {
                 selectedEmployee = value;
                 OnPropertyChanged("SelectedEmployee");
+                commandDelete.RaiseCanExecuteChanged();
+                commandAdd.RaiseCanExecuteChanged();
+                commandPromote.RaiseCanExecuteChanged();
+                commandUpdate.RaiseCanExecuteChanged();
             } }
         private ITEmployee selectedEmployee;
         
 
-        public RelayCommand commandDelete { get; set; }
+        public RelayCommand commandDelete { get; private set; }
         public void Delete()
         {
             model.DeleteEmployee(SelectedEmployee.Id);
@@ -183,7 +220,7 @@ namespace WpfApp1
         }
 
 
-        public RelayCommand commandPromote { get; set; }
+        public RelayCommand commandPromote { get; private set; }
 
         public void OkPromote()
         {
@@ -193,7 +230,7 @@ namespace WpfApp1
             UpdateListEmployees();
         }
 
-        public RelayCommand commandUpdate { get; set; }
+        public RelayCommand commandUpdate { get; private set; }
 
         public void UpdateEmployee()
         {
@@ -212,6 +249,21 @@ namespace WpfApp1
             UpdateListEmployees();
         }
 
+        public RelayCommand commandImport { get; private set; }
+
+
+        public bool CheckSelectedNull()
+        {
+            return selectedEmployee != null && model.GetEmployeeById(selectedEmployee.Id) != null;
+        }
+        public bool CheckPromote()
+        {
+            return CheckSelectedNull() && model.IsPromoteEmployeeBasedOnExperience(selectedEmployee);
+        }
+        public bool CheckUpdate()
+        {
+            return CheckSelectedNull() && CheckAdd();
+        }
         public bool CheckAdd()
         {
             if(Name == null || string.IsNullOrWhiteSpace(Name))
@@ -227,10 +279,139 @@ namespace WpfApp1
                 PropertyChanged(this, new PropertyChangedEventArgs(prop));
         }
 
+        private void CreateImport()
+        {
+            try
+            {
+
+                var allEmployees = model.GetAllEmployees();
+
+                var debugInfo = $"DEBUG:\n" +
+                               $"Всего сотрудников: {employees.Count}\n" +
+                               $"Сотрудники\n" +
+                               $"  Позиция: {(Position)(PositionFilter - 1)}\n" +
+                               $"  Отдел: {(Department)(DepartmentFilter - 1)}\n\n";
+
+
+                MessageBox.Show(debugInfo, "Отладка", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                var filteredEmployee = new List<ITEmployee>();
+                foreach(var i in allEmployees)
+                {
+                    if (DepartmentFilter == 0)
+                    {
+                        if (PositionFilter == 0)
+                        {
+                            filteredEmployee.Add(i);
+                        }
+                        if (i.Position == (Position)(PositionFilter-1))
+                        {
+                            filteredEmployee.Add(i);
+                        } 
+                    }
+                    else if (PositionFilter == 0)
+                    {
+                        if (DepartmentFilter == 0)
+                        {
+                            filteredEmployee.Add(i);
+                        }
+                        if (i.Department == (Department)(DepartmentFilter-1))
+                            filteredEmployee.Add(i);
+                    }
+                    else
+                    {
+                        if (i.Position == (Position)(PositionFilter - 1))
+                        if (i.Department == (Department)(DepartmentFilter - 1))
+                        filteredEmployee.Add(i); 
+                    }
+                }
+                    if (filteredEmployee.Count() == 0)
+                    {
+                        MessageBox.Show($"Сотрудников с такой позицией:{(Position)(PositionFilter-1)} и с таким отделом: {(Department)(DepartmentFilter-1)} не найдено",
+                            "Информация", MessageBoxButton.OK, MessageBoxImage.Information);
+                        return;
+                    }
+
+                    string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                    string jsonFilePath = System.IO.Path.Combine(desktopPath, $"report.json");
+                    string csvFilePath = System.IO.Path.Combine(desktopPath, $"report.csv");
+
+                    CreateJsonReport(filteredEmployee, jsonFilePath);
+
+                    CreateCsvReport(filteredEmployee, csvFilePath);
+
+                    var message = $"Отчет успешно создан!\n\n" +
+                                  $"Файлы сохранены на рабочем столе:\n" +
+                                  $"📄 {System.IO.Path.GetFileName(jsonFilePath)}\n" +
+                                  $"📄 {System.IO.Path.GetFileName(csvFilePath)}";
+
+                    MessageBox.Show(message, "Отчет создан", MessageBoxButton.OK, MessageBoxImage.Information);
+                
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при создании отчета: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void CreateJsonReport(List<ITEmployee> employees, string filePath)
+        {
+            try
+            {
+                var report = new
+                {
+                    GeneratedAt = DateTime.Now,
+                    TotalITEmployee = employees.Count,
+                    ITEmployee = employees.Select(e => new
+                    {
+                        e.Id,
+                        e.FullName,
+                        e.Position,
+                        e.Department,
+                        e.Salary,
+                        e.ExperienceYears,
+                        Language = e.Language.Name
+                    }).ToList()
+                };
+
+                string json = Newtonsoft.Json.JsonConvert.SerializeObject(report, Newtonsoft.Json.Formatting.Indented);
+
+                System.IO.File.WriteAllText(filePath, json, System.Text.Encoding.UTF8);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Ошибка создания JSON отчета: {ex.Message}", ex);
+            }
+        }
+
+        private void CreateCsvReport(List<ITEmployee> employees, string filePath)
+        {
+            try
+            {
+                var csv = new System.Text.StringBuilder();
+
+                csv.AppendLine("ID,ФИО,Уровень Проф.подготовки,Отдел,Зарплата,Язык программирования");
+
+                foreach (var employee in employees)
+                {
+                    csv.AppendLine($"{employee.Id},\"{employee.FullName}\",{employee.Position}\",{employee.Department},\"{employee.Salary}\",{employee.ExperienceYears}\",{employee.Language.Name}");
+                }
+
+                System.IO.File.WriteAllText(filePath, csv.ToString(), System.Text.Encoding.UTF8);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Ошибка создания CSV отчета: {ex.Message}", ex);
+            }
+        }
         public void Initialize()
         {
             Initialized?.Invoke(this, EventArgs.Empty);
         }
+
+
+
+
 
 
 

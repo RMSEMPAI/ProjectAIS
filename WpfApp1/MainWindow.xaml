@@ -39,7 +39,26 @@
                 <DataGridTextColumn Header="Language" Binding="{Binding Language.Name}" Width="100"/>
             </DataGrid.Columns>
         </DataGrid>
-
+        <StackPanel Grid.Column="1" Grid.Row="2">
+            <Button x:Name="bf" Content="Импорт" Height="40" Command="{Binding commandImport}"/>
+            <ComboBox Grid.Column="1" Grid.Row="1" Margin="20,5,0,0" Width="300" Height="30" SelectedIndex="{Binding PositionFilter}">
+                <ComboBoxItem Content="Все"/>
+                <ComboBoxItem Content="Unknow"/>
+                <ComboBoxItem Content="Junior"/>
+                <ComboBoxItem Content="Middle"/>
+                <ComboBoxItem Content="Senior"/>
+            </ComboBox>
+            <ComboBox Grid.Column="1" Grid.Row="2" Margin="20,5,0,0" Width="300" Height="30" SelectedIndex="{Binding DepartmentFilter}">
+                <ComboBoxItem Content="Все"/>
+                <ComboBoxItem Content="Unknown"/>
+                <ComboBoxItem Content="Аналитик"/>
+                <ComboBoxItem Content="Кибербезопасность"/>
+                <ComboBoxItem Content="Информационная_структура"/>
+                <ComboBoxItem Content="Разработчик"/>
+                <ComboBoxItem Content="ERP_платформы"/>
+                <ComboBoxItem Content="База_данных"/>
+            </ComboBox>
+        </StackPanel>
 
 
 
@@ -52,6 +71,7 @@
             <Button x:Name="update_btn" Content="Изменить" Height="40" Margin="0,0,0,5" Command="{Binding commandUpdate}"/>
             <Button x:Name="delete_btn" Content="Удалить" Height="40" Margin="0,0,0,5" Command="{Binding commandDelete}"/>
             <Button x:Name="up_btn" Content="Повышение" Height="40" Command="{Binding commandPromote}"/>
+
         </StackPanel>
         <Grid Grid.Column="0" Grid.Row="1">
             <Grid.ColumnDefinitions>
@@ -116,7 +136,7 @@
 
                 <Border BorderBrush="LightGray" BorderThickness="0,0,0,1" Padding="0,0,0,10" Margin="0,0,0,10">
                     <StackPanel>
-                        <CheckBox x:Name="checkBox2" Content="Вывести сотрудников по позиции" FontSize="14" IsChecked="{Binding ShowOnPosition}"/>
+                        <TextBlock x:Name="checkBox2" Text="Вывести сотрудников по позиции" FontSize="14"/>
                         <ComboBox x:Name="comboBox1" Margin="20,5,0,0" Width="300" Height="30" SelectedIndex="{Binding PositionChoose}">
                             <ComboBoxItem Content="Unknow"/>
                             <ComboBoxItem Content="Junior"/>
@@ -129,7 +149,7 @@
 
                 <Border BorderBrush="LightGray" BorderThickness="0,0,0,1" Padding="0,0,0,10" Margin="0,0,0,10">
                     <StackPanel>
-                        <CheckBox x:Name="checkBox3" Content="Вывести сотрудников по отделу" FontSize="14" IsChecked="{Binding ShowOnDepartment}"/>
+                        <TextBlock x:Name="checkBox3" Text="Вывести сотрудников по отделу" FontSize="14" />
                         <ComboBox x:Name="comboBox2" Margin="20,5,0,0" Width="300" Height="30" SelectedIndex="{Binding DepartmentChoose}">
                             <ComboBoxItem Content="Unknown"/>
                             <ComboBoxItem Content="Аналитик"/>

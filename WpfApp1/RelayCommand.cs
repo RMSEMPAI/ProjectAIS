@@ -14,7 +14,7 @@ namespace WpfApp1
 
         public event EventHandler? CanExecuteChanged;
 
-        public RelayCommand(Action execute, Func<bool>? canExecute = null)
+        public RelayCommand(Action? execute, Func<bool>? canExecute)
         {
             _execute = execute ?? throw new ArgumentNullException(nameof(execute));
             _canExecute = canExecute;
@@ -25,6 +25,10 @@ namespace WpfApp1
         public void Execute(object? parameter)
         {
             _execute();
+        }
+        public void RaiseCanExecuteChanged()
+        {
+            CanExecuteChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 }
